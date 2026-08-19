@@ -1,0 +1,15 @@
+services:
+  mc-inventario:
+    build:
+      context: ./services/mc-inventario
+      dockerfile: Dockerfile
+
+    container_name: mc-inventario
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./services/mc-inventario:/app
+
+    command: python manage.py runserver 0.0.0.0:8000
