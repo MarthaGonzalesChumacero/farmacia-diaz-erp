@@ -6,6 +6,9 @@ services:
 
     container_name: mc-inventario
 
+    env_file:
+      - ./services/mc-inventario/.env
+
     ports:
       - "8000:8000"
 
@@ -16,6 +19,21 @@ services:
 
     depends_on:
       - redis
+      - postgres
+
+  postgres:
+    image: postgres:17-alpine
+
+    container_name: postgres-inventario
+
+    env_file:
+      - ./services/mc-inventario/.env
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
@@ -32,6 +50,9 @@ services:
 
     container_name: celery-inventario
 
+    env_file:
+      - ./services/mc-inventario/.env
+
     volumes:
       - ./services/mc-inventario:/app
 
@@ -39,6 +60,7 @@ services:
 
     depends_on:
       - redis
+      - postgres
       - mc-inventario
 
   celery-beat:
@@ -48,6 +70,9 @@ services:
 
     container_name: celery-beat-inventario
 
+    env_file:
+      - ./services/mc-inventario/.env
+
     volumes:
       - ./services/mc-inventario:/app
 
@@ -55,4 +80,8 @@ services:
 
     depends_on:
       - redis
+      - postgres
       - celery
+
+volumes:
+  postgres_data:
