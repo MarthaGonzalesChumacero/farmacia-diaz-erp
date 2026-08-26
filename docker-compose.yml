@@ -13,3 +13,46 @@ services:
       - ./services/mc-inventario:/app
 
     command: python manage.py runserver 0.0.0.0:8000
+
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+
+    container_name: redis-inventario
+
+    ports:
+      - "6379:6379"
+
+  celery:
+    build:
+      context: ./services/mc-inventario
+      dockerfile: Dockerfile
+
+    container_name: celery-inventario
+
+    volumes:
+      - ./services/mc-inventario:/app
+
+    command: celery -A config worker --loglevel=info
+
+    depends_on:
+      - redis
+      - mc-inventario
+
+  celery-beat:
+    build:
+      context: ./services/mc-inventario
+      dockerfile: Dockerfile
+
+    container_name: celery-beat-inventario
+
+    volumes:
+      - ./services/mc-inventario:/app
+
+    command: celery -A config beat --loglevel=info
+
+    depends_on:
+      - redis
+      - celery

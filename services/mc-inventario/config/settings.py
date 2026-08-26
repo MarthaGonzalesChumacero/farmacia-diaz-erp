@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 
+from celery.schedules import crontab
+
+
 # ======================================
 # Base
 # ======================================
@@ -23,7 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Seguridad
 # ======================================
 
-SECRET_KEY = 'django-insecure-7i)drh-)dulss2s3pyv*_e#qiare#u0j=nnis#ls%njdsnm0j-'
+SECRET_KEY = (
+    'django-insecure-7i)drh-)dulss2s3pyv*_e#qiare'
+    '#u0j=nnis#ls%njdsnm0j-'
+)
 
 DEBUG = True
 
@@ -78,14 +84,22 @@ ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'BACKEND': (
+            'django.template.backends.django.DjangoTemplates'
+        ),
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+                (
+                    'django.template.context_processors.request'
+                ),
+                (
+                    'django.contrib.auth.context_processors.auth'
+                ),
+                (
+                    'django.contrib.messages.context_processors.messages'
+                ),
             ],
         },
     },
@@ -113,16 +127,28 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'UserAttributeSimilarityValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'MinimumLengthValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'CommonPasswordValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'NumericPasswordValidator'
+        ),
     },
 ]
 
@@ -174,6 +200,7 @@ REST_FRAMEWORK = {
     ],
 }
 
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Farmacia Díaz ERP API",
     "DESCRIPTION": (
@@ -181,4 +208,36 @@ SPECTACULAR_SETTINGS = {
         "del ERP Farmacia Díaz."
     ),
     "VERSION": "1.0.0",
+}
+
+
+# ======================================
+# Celery
+# ======================================
+
+CELERY_BROKER_URL = "redis://redis:6379/0"
+
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+
+CELERY_ACCEPT_CONTENT = ["json"]
+
+CELERY_TASK_SERIALIZER = "json"
+
+CELERY_RESULT_SERIALIZER = "json"
+
+CELERY_TIMEZONE = "America/La_Paz"
+
+
+# ======================================
+# Celery Beat
+# ======================================
+
+CELERY_BEAT_SCHEDULE = {
+    "verificar-vencimientos-diariamente": {
+        "task": "inventory.tasks.verificar_vencimientos",
+        "schedule": crontab(
+            hour=8,
+            minute=0,
+        ),
+    },
 }

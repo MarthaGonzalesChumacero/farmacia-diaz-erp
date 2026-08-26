@@ -24,3 +24,8 @@ media/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Celery Beat
+celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
