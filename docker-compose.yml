@@ -35,6 +35,41 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  mc-ventas:
+    build:
+      context: ./services/mc-ventas
+      dockerfile: Dockerfile
+
+    container_name: mc-ventas
+
+    env_file:
+      - ./services/mc-ventas/.env
+
+    ports:
+      - "8001:8000"
+
+    volumes:
+      - ./services/mc-ventas:/app
+
+    command: python manage.py runserver 0.0.0.0:8000
+
+    depends_on:
+      - postgres-ventas
+
+  postgres-ventas:
+    image: postgres:17-alpine
+
+    container_name: postgres-ventas
+
+    env_file:
+      - ./services/mc-ventas/.env
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_ventas_data:/var/lib/postgresql/data
+
   redis:
     image: redis:7-alpine
 
@@ -85,3 +120,4 @@ services:
 
 volumes:
   postgres_data:
+  postgres_ventas_data:

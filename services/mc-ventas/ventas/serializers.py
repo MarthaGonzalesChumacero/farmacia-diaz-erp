@@ -1,9 +1,8 @@
-from decimal import Decimal
-
-from django.db import transaction
 from rest_framework import serializers
 
 from .models import DetalleVenta, Venta
+from .services.venta_service import VentaService
+from .validators.venta_validator import VentaValidator
 
 
 class DetalleVentaSerializer(serializers.ModelSerializer):
@@ -48,54 +47,14 @@ class VentaSerializer(serializers.ModelSerializer):
         ]
 
     def validate_detalles(self, detalles):
-        if not detalles:
-            raise serializers.ValidationError(
-                'La venta debe tener al menos un medicamento.'
-            )
+        return VentaValidator.validar_detalles(detalles)
 
-        for detalle in detalles:
-            if detalle['cantidad'] <= 0:
-                raise serializers.ValidationError(
-                    'La cantidad debe ser mayor a 0.'
-                )
-
-            if detalle['precio_unitario'] <= Decimal('0'):
-                raise serializers.ValidationError(
-                    'El precio unitario debe ser mayor a 0.'
-                )
-
-        return detalles
-
-    @transaction.atomic
     def create(self, validated_data):
         detalles_data = validated_data.pop('detalles')
 
-        venta = Venta.objects.create(
-            **validated_data
-        )
-
-        total = Decimal('0.00')
-
-        for detalle_data in detalles_data:
-            cantidad = detalle_data['cantidad']
-            precio_unitario = detalle_data['precio_unitario']
-
-            subtotal = (
-                Decimal(cantidad)
-                * precio_unitario
-            )
-
-            DetalleVenta.objects.create(
-                venta=venta,
-                subtotal=subtotal,
-                **detalle_data
-            )
-
-            total += subtotal
-
-        venta.total = total
-        venta.save(
-            update_fields=['total']
+        venta = VentaService.crear_venta(
+            validated_data,
+            detalles_data,
         )
 
         return venta
