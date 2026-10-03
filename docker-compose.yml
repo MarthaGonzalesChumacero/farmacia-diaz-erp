@@ -70,6 +70,41 @@ services:
     volumes:
       - postgres_ventas_data:/var/lib/postgresql/data
 
+  mc-usuarios:
+    build:
+      context: ./services/mc-usuarios
+      dockerfile: Dockerfile
+
+    container_name: mc-usuarios
+
+    env_file:
+      - ./services/mc-usuarios/.env
+
+    ports:
+      - "8002:8000"
+
+    volumes:
+      - ./services/mc-usuarios:/app
+
+    command: python manage.py runserver 0.0.0.0:8000
+
+    depends_on:
+      - postgres-usuarios
+
+  postgres-usuarios:
+    image: postgres:17-alpine
+
+    container_name: postgres-usuarios
+
+    env_file:
+      - ./services/mc-usuarios/.env
+
+    ports:
+      - "5434:5432"
+
+    volumes:
+      - postgres_usuarios_data:/var/lib/postgresql/data
+
   redis:
     image: redis:7-alpine
 
@@ -121,3 +156,4 @@ services:
 volumes:
   postgres_data:
   postgres_ventas_data:
+  postgres_usuarios_data:
