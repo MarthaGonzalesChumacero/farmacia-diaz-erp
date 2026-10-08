@@ -48,3 +48,28 @@ export async function getAlertas(): Promise<Alerta[]> {
 
   return response.data
 }
+
+
+export interface NuevoMedicamento {
+  nombre: string
+  principio_activo: string
+  presentacion: string
+  codigo_barras: string
+  registro_sanitario?: string
+  descripcion?: string
+  stock_minimo?: number
+  unidad_medida?: string
+  categoria?: number | null
+  laboratorio?: number | null
+}
+
+export async function crearMedicamento(
+  medicamento: NuevoMedicamento,
+): Promise<Medicamento> {
+  const response = await inventarioApi.post<Medicamento>(
+    '/medicamentos/',
+    medicamento,
+  )
+
+  return response.data
+}

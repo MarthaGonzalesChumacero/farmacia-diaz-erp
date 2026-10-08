@@ -1,8 +1,11 @@
+
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import ProtectedRoute from './components/ProtectedRoute'
 import DashboardPage from './pages/DashboardPage'
+import InventarioPage from './pages/InventarioPage'
 import LoginPage from './pages/LoginPage'
+import RegistrarMedicamentoPage from './pages/RegistrarMedicamentoPage'
 
 function App() {
   return (
@@ -22,6 +25,24 @@ function App() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/inventario"
+        element={
+          <ProtectedRoute>
+            <InventarioPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/inventario/registrar"
+        element={
+          <ProtectedRoute>
+            <RegistrarMedicamentoPage />
           </ProtectedRoute>
         }
       />

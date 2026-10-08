@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import {
   AlertTriangle,
   Boxes,
@@ -359,7 +360,21 @@ function DashboardPage() {
           </h3>
 
           <div className="grid gap-5 md:grid-cols-3">
-            <article className="rounded-2xl bg-white p-6 shadow-sm">
+
+            {/* Inventario: tarjeta con navegación */}
+
+            <article
+              role="link"
+              tabIndex={0}
+              onClick={() => navigate('/inventario')}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  navigate('/inventario')
+                }
+              }}
+              className="cursor-pointer rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
               <Boxes
                 className="mb-4 text-blue-600"
                 size={30}
@@ -373,6 +388,8 @@ function DashboardPage() {
                 Medicamentos, lotes, stock y movimientos.
               </p>
             </article>
+
+            {/* Ventas */}
 
             <article className="rounded-2xl bg-white p-6 shadow-sm">
               <ShoppingCart
@@ -388,6 +405,8 @@ function DashboardPage() {
                 Registro y consulta de ventas realizadas.
               </p>
             </article>
+
+            {/* Control de stock */}
 
             <article className="rounded-2xl bg-white p-6 shadow-sm">
               <PackageSearch
