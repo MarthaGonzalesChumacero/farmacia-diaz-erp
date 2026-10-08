@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -13,14 +14,67 @@ import {
 
 import {
   getUsuarioActual,
+  getUsuarios,
   type UsuarioActual,
 } from '../services/authService'
+
+import {
+  getMedicamentos,
+  getAlertas,
+  type Medicamento,
+  type Alerta,
+} from '../services/inventarioService'
+
+import {
+  getVentas,
+  type Venta,
+} from '../services/ventasService'
 
 function DashboardPage() {
   const navigate = useNavigate()
 
+  // ======================================
+  // Usuario autenticado
+  // ======================================
+
   const [usuario, setUsuario] = useState<UsuarioActual | null>(null)
   const [cargandoUsuario, setCargandoUsuario] = useState(true)
+
+  // ======================================
+  // Medicamentos
+  // ======================================
+
+  const [medicamentos, setMedicamentos] = useState<Medicamento[]>([])
+  const [cargandoMedicamentos, setCargandoMedicamentos] = useState(true)
+  const [errorMedicamentos, setErrorMedicamentos] = useState(false)
+
+  // ======================================
+  // Ventas
+  // ======================================
+
+  const [ventas, setVentas] = useState<Venta[]>([])
+  const [cargandoVentas, setCargandoVentas] = useState(true)
+  const [errorVentas, setErrorVentas] = useState(false)
+
+  // ======================================
+  // Alertas
+  // ======================================
+
+  const [alertas, setAlertas] = useState<Alerta[]>([])
+  const [cargandoAlertas, setCargandoAlertas] = useState(true)
+  const [errorAlertas, setErrorAlertas] = useState(false)
+
+  // ======================================
+  // Usuarios registrados
+  // ======================================
+
+  const [usuarios, setUsuarios] = useState<UsuarioActual[]>([])
+  const [cargandoUsuarios, setCargandoUsuarios] = useState(true)
+  const [errorUsuarios, setErrorUsuarios] = useState(false)
+
+  // ======================================
+  // Cargar usuario autenticado
+  // ======================================
 
   useEffect(() => {
     const cargarUsuario = async () => {
@@ -39,6 +93,94 @@ function DashboardPage() {
     void cargarUsuario()
   }, [navigate])
 
+  // ======================================
+  // Cargar medicamentos
+  // ======================================
+
+  useEffect(() => {
+    const cargarMedicamentos = async () => {
+      try {
+        const datosMedicamentos = await getMedicamentos()
+        setMedicamentos(datosMedicamentos)
+        setErrorMedicamentos(false)
+      } catch (error) {
+        console.error('Error al cargar medicamentos:', error)
+        setErrorMedicamentos(true)
+      } finally {
+        setCargandoMedicamentos(false)
+      }
+    }
+
+    void cargarMedicamentos()
+  }, [])
+
+  // ======================================
+  // Cargar ventas
+  // ======================================
+
+  useEffect(() => {
+    const cargarVentas = async () => {
+      try {
+        const datosVentas = await getVentas()
+        setVentas(datosVentas)
+        setErrorVentas(false)
+      } catch (error) {
+        console.error('Error al cargar ventas:', error)
+        setErrorVentas(true)
+      } finally {
+        setCargandoVentas(false)
+      }
+    }
+
+    void cargarVentas()
+  }, [])
+
+  // ======================================
+  // Cargar alertas
+  // ======================================
+
+  useEffect(() => {
+    const cargarAlertas = async () => {
+      try {
+        const datosAlertas = await getAlertas()
+        setAlertas(datosAlertas)
+        setErrorAlertas(false)
+      } catch (error) {
+        console.error('Error al cargar alertas:', error)
+        setErrorAlertas(true)
+      } finally {
+        setCargandoAlertas(false)
+      }
+    }
+
+    void cargarAlertas()
+  }, [])
+
+  // ======================================
+  // Cargar usuarios registrados
+  // ======================================
+
+  useEffect(() => {
+    const cargarUsuarios = async () => {
+      try {
+        const datosUsuarios = await getUsuarios()
+        setUsuarios(datosUsuarios)
+        setErrorUsuarios(false)
+      } catch (error) {
+        console.error('Error al cargar usuarios:', error)
+        setErrorUsuarios(true)
+      } finally {
+        setCargandoUsuarios(false)
+      }
+    }
+
+    void cargarUsuarios()
+  }, [])
+
+  // ======================================
+  // Cerrar sesión
+  // ======================================
+
   const handleLogout = () => {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
@@ -55,6 +197,10 @@ function DashboardPage() {
     usuario?.rol === 'administrador'
       ? 'Administrador'
       : 'Auxiliar'
+
+  // ======================================
+  // Dashboard
+  // ======================================
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -120,7 +266,12 @@ function DashboardPage() {
           </p>
         </div>
 
+        {/* Tarjetas de indicadores */}
+
         <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+
+          {/* Medicamentos */}
+
           <article className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
               <Pill size={23} />
@@ -131,9 +282,15 @@ function DashboardPage() {
             </p>
 
             <p className="mt-2 text-3xl font-bold text-slate-900">
-              --
+              {cargandoMedicamentos
+                ? '...'
+                : errorMedicamentos
+                  ? '--'
+                  : medicamentos.length}
             </p>
           </article>
+
+          {/* Ventas */}
 
           <article className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
@@ -145,9 +302,15 @@ function DashboardPage() {
             </p>
 
             <p className="mt-2 text-3xl font-bold text-slate-900">
-              --
+              {cargandoVentas
+                ? '...'
+                : errorVentas
+                  ? '--'
+                  : ventas.length}
             </p>
           </article>
+
+          {/* Alertas */}
 
           <article className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
@@ -159,9 +322,15 @@ function DashboardPage() {
             </p>
 
             <p className="mt-2 text-3xl font-bold text-slate-900">
-              --
+              {cargandoAlertas
+                ? '...'
+                : errorAlertas
+                  ? '--'
+                  : alertas.length}
             </p>
           </article>
+
+          {/* Usuarios */}
 
           <article className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
@@ -173,10 +342,16 @@ function DashboardPage() {
             </p>
 
             <p className="mt-2 text-3xl font-bold text-slate-900">
-              --
+              {cargandoUsuarios
+                ? '...'
+                : errorUsuarios
+                  ? '--'
+                  : usuarios.length}
             </p>
           </article>
         </section>
+
+        {/* Módulos del sistema */}
 
         <section className="mt-8">
           <h3 className="mb-4 text-xl font-bold text-slate-900">

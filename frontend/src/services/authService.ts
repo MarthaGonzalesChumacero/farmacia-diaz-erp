@@ -1,4 +1,9 @@
+
 import usuariosApi from '../api/usuariosApi'
+
+// ======================================
+// Tipos de autenticación
+// ======================================
 
 export interface LoginCredentials {
   username: string
@@ -21,6 +26,10 @@ export interface UsuarioActual {
   activo: boolean
 }
 
+// ======================================
+// Iniciar sesión
+// ======================================
+
 export async function login(
   credentials: LoginCredentials,
 ): Promise<TokenResponse> {
@@ -32,15 +41,48 @@ export async function login(
   return response.data
 }
 
-export async function getUsuarioActual(): Promise<UsuarioActual> {
+// ======================================
+// Obtener token de acceso
+// ======================================
+
+function getAccessToken(): string {
   const accessToken = localStorage.getItem('accessToken')
 
   if (!accessToken) {
     throw new Error('No existe un token de acceso.')
   }
 
+  return accessToken
+}
+
+// ======================================
+// Obtener usuario autenticado
+// ======================================
+
+export async function getUsuarioActual(): Promise<UsuarioActual> {
+  const accessToken = getAccessToken()
+
   const response = await usuariosApi.get<UsuarioActual>(
     '/usuarios/me/',
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  )
+
+  return response.data
+}
+
+// ======================================
+// Obtener lista de usuarios
+// ======================================
+
+export async function getUsuarios(): Promise<UsuarioActual[]> {
+  const accessToken = getAccessToken()
+
+  const response = await usuariosApi.get<UsuarioActual[]>(
+    '/usuarios/',
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
