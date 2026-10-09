@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
+  AlertTriangle,
   ArrowLeft,
   Barcode,
   Package,
@@ -14,62 +15,123 @@ import {
 
 import {
   getMedicamentos,
+  getLotes,
   type Medicamento,
+  type Lote,
 } from '../services/inventarioService'
 
 function InventarioPage() {
   const navigate = useNavigate()
 
   const [medicamentos, setMedicamentos] = useState<Medicamento[]>([])
+  const [lotes, setLotes] = useState<Lote[]>([])
   const [busqueda, setBusqueda] = useState('')
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
 
-  // ======================================
-  // Cargar medicamentos desde Django
-  // ======================================
+  // Cargar medicamentos y lotes desde Django
 
-  const cargarMedicamentos = async () => {
+  const cargarInventario = async () => {
     setCargando(true)
     setError('')
 
     try {
-      const datos = await getMedicamentos()
-      setMedicamentos(datos)
-    } catch (error) {
-      console.error('Error al cargar inventario:', error)
-      setError('No se pudieron cargar los medicamentos.')
+      const [datosMedicamentos, datosLotes] = await Promise.all([
+        getMedicamentos(),
+        getLotes(),
+      ])
+
+      setMedicamentos(datosMedicamentos)
+      setLotes(datosLotes)
+    } catch (err) {
+      console.error('Error al cargar inventario:', err)
+      setError('No se pudo cargar el inventario desde el servidor.')
     } finally {
       setCargando(false)
     }
   }
 
   useEffect(() => {
-    void cargarMedicamentos()
+    void cargarInventario()
   }, [])
 
-  // ======================================
+  // Calcular stock por medicamento
+
+  const calcularStock = (medicamentoId: number): number => {
+    return lotes
+      .filter(
+        (lote) =>
+          lote.medicamento === medicamentoId &&
+          lote.activo
+      )
+      .reduce(
+        (total, lote) => total + Number(lote.cantidad_actual),
+        0
+      )
+  }
+
+  // Determinar estado del stock
+
+  const obtenerEstadoStock = (
+    stockActual: number,
+    stockMinimo: number
+  ) => {
+    if (stockActual <= 0) {
+      return {
+        texto: 'Agotado',
+        estilos: 'bg-red-100 text-red-700',
+      }
+    }
+
+    if (stockActual <= stockMinimo) {
+      return {
+        texto: 'Crítico',
+        estilos: 'bg-amber-100 text-amber-700',
+      }
+    }
+
+    return {
+      texto: 'Normal',
+      estilos: 'bg-emerald-100 text-emerald-700',
+    }
+  }
+
+  // Resumen del inventario
+
+  const medicamentosActivos = medicamentos.filter(
+    (medicamento) => medicamento.activo
+  )
+
+  const totalCriticos = medicamentosActivos.filter(
+    (medicamento) => {
+      const stock = calcularStock(medicamento.id)
+
+      return stock > 0 && stock <= medicamento.stock_minimo
+    }
+  ).length
+
+  const totalAgotados = medicamentosActivos.filter(
+    (medicamento) => calcularStock(medicamento.id) <= 0
+  ).length
+
   // Buscar medicamentos
-  // ======================================
 
   const medicamentosFiltrados = medicamentos.filter((medicamento) => {
     const texto = busqueda.toLowerCase().trim()
 
     return (
       medicamento.nombre.toLowerCase().includes(texto) ||
-      medicamento.codigo_barras.toLowerCase().includes(texto) ||
-      medicamento.principio_activo.toLowerCase().includes(texto)
+      (medicamento.codigo_barras ?? '').toLowerCase().includes(texto) ||
+      (medicamento.principio_activo ?? '').toLowerCase().includes(texto)
     )
   })
 
   return (
     <div className="min-h-screen bg-slate-100">
-
       {/* Encabezado */}
 
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-4">
-
           <button
             type="button"
             onClick={() => navigate('/dashboard')}
@@ -87,7 +149,6 @@ function InventarioPage() {
             <h1 className="text-xl font-bold text-slate-900">
               Farmacia Díaz
             </h1>
-
             <p className="text-sm text-slate-500">
               Gestión de inventario
             </p>
@@ -96,28 +157,22 @@ function InventarioPage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8">
-
         {/* Título y botones */}
 
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-
           <div>
             <h2 className="text-3xl font-bold text-slate-900">
               Inventario de medicamentos
             </h2>
-
             <p className="mt-2 text-slate-500">
-              Consulta y administra los medicamentos registrados en el sistema.
+              Consulta medicamentos, existencias y stock crítico.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-
-            {/* Botón actualizar */}
-
             <button
               type="button"
-              onClick={() => void cargarMedicamentos()}
+              onClick={() => void cargarInventario()}
               disabled={cargando}
               className="flex items-center gap-2 rounded-lg border border-blue-600 bg-white px-4 py-3 font-medium text-blue-600 transition hover:bg-blue-50 disabled:opacity-50"
             >
@@ -125,7 +180,14 @@ function InventarioPage() {
               Actualizar
             </button>
 
-            {/* Botón registrar medicamento */}
+            <button
+              type="button"
+              onClick={() => navigate('/inventario/lotes')}
+              className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              <Package size={18} />
+              Ver lotes
+            </button>
 
             <button
               type="button"
@@ -135,36 +197,46 @@ function InventarioPage() {
               <Plus size={20} />
               Nuevo medicamento
             </button>
-
           </div>
         </div>
 
-        {/* Total de medicamentos */}
+        {/* Resumen */}
 
-        <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
+        <div className="mb-6 grid gap-4 sm:grid-cols-3">
+          <section className="rounded-2xl bg-white p-5 shadow-sm">
+            <Package className="mb-3 text-blue-600" size={25} />
+            <p className="text-sm text-slate-500">
+              Medicamentos registrados
+            </p>
+            <p className="text-2xl font-bold text-slate-900">
+              {cargando ? '...' : error ? '--' : medicamentos.length}
+            </p>
+          </section>
 
-            <Package className="text-blue-600" size={24} />
+          <section className="rounded-2xl bg-white p-5 shadow-sm">
+            <AlertTriangle className="mb-3 text-amber-500" size={25} />
+            <p className="text-sm text-slate-500">
+              Stock crítico
+            </p>
+            <p className="text-2xl font-bold text-amber-600">
+              {cargando ? '...' : error ? '--' : totalCriticos}
+            </p>
+          </section>
 
-            <div>
-              <p className="text-sm text-slate-500">
-                Medicamentos registrados
-              </p>
-
-              <p className="text-2xl font-bold text-slate-900">
-                {cargando ? '...' : error ? '--' : medicamentos.length}
-              </p>
-            </div>
-
-          </div>
-        </section>
+          <section className="rounded-2xl bg-white p-5 shadow-sm">
+            <AlertTriangle className="mb-3 text-red-500" size={25} />
+            <p className="text-sm text-slate-500">
+              Medicamentos agotados
+            </p>
+            <p className="text-2xl font-bold text-red-600">
+              {cargando ? '...' : error ? '--' : totalAgotados}
+            </p>
+          </section>
+        </div>
 
         {/* Tabla de medicamentos */}
 
         <section className="rounded-2xl bg-white p-6 shadow-sm">
-
-          {/* Buscador */}
-
           <div className="relative mb-6">
             <Search
               size={20}
@@ -180,11 +252,9 @@ function InventarioPage() {
             />
           </div>
 
-          {/* Estados de carga */}
-
           {cargando ? (
             <p className="py-8 text-center text-slate-500">
-              Cargando medicamentos...
+              Cargando inventario...
             </p>
           ) : error ? (
             <p role="alert" className="py-8 text-center text-red-600">
@@ -195,28 +265,31 @@ function InventarioPage() {
               No se encontraron medicamentos.
             </p>
           ) : (
-
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-
+              <table className="w-full min-w-[950px] text-left text-sm">
                 <thead className="border-b border-slate-200 bg-slate-50 text-slate-600">
                   <tr>
                     <th className="px-4 py-3 font-semibold">
                       Medicamento
                     </th>
-
                     <th className="px-4 py-3 font-semibold">
                       Principio activo
                     </th>
-
                     <th className="px-4 py-3 font-semibold">
                       Presentación
                     </th>
-
                     <th className="px-4 py-3 font-semibold">
                       Código de barras
                     </th>
-
+                    <th className="px-4 py-3 font-semibold">
+                      Stock actual
+                    </th>
+                    <th className="px-4 py-3 font-semibold">
+                      Stock mínimo
+                    </th>
+                    <th className="px-4 py-3 font-semibold">
+                      Estado del stock
+                    </th>
                     <th className="px-4 py-3 font-semibold">
                       Estado
                     </th>
@@ -224,54 +297,72 @@ function InventarioPage() {
                 </thead>
 
                 <tbody>
-                  {medicamentosFiltrados.map((medicamento) => (
+                  {medicamentosFiltrados.map((medicamento) => {
+                    const stockActual = calcularStock(medicamento.id)
 
-                    <tr
-                      key={medicamento.id}
-                      className="border-b border-slate-100 hover:bg-slate-50"
-                    >
+                    const estadoStock = obtenerEstadoStock(
+                      stockActual,
+                      Number(medicamento.stock_minimo)
+                    )
 
-                      <td className="px-4 py-4 font-medium text-slate-900">
-                        {medicamento.nombre}
-                      </td>
+                    return (
+                      <tr
+                        key={medicamento.id}
+                        className="border-b border-slate-100 hover:bg-slate-50"
+                      >
+                        <td className="px-4 py-4 font-medium text-slate-900">
+                          {medicamento.nombre}
+                        </td>
 
-                      <td className="px-4 py-4 text-slate-600">
-                        {medicamento.principio_activo}
-                      </td>
+                        <td className="px-4 py-4 text-slate-600">
+                          {medicamento.principio_activo}
+                        </td>
 
-                      <td className="px-4 py-4 text-slate-600">
-                        {medicamento.presentacion}
-                      </td>
+                        <td className="px-4 py-4 text-slate-600">
+                          {medicamento.presentacion}
+                        </td>
 
-                      <td className="px-4 py-4">
-                        <span className="inline-flex items-center gap-2 text-slate-600">
-                          <Barcode size={17} />
-                          {medicamento.codigo_barras}
-                        </span>
-                      </td>
+                        <td className="px-4 py-4 text-slate-600">
+                          <span className="inline-flex items-center gap-2">
+                            <Barcode size={17} />
+                            {medicamento.codigo_barras}
+                          </span>
+                        </td>
 
-                      <td className="px-4 py-4">
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                            medicamento.activo
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-slate-200 text-slate-600'
-                          }`}
-                        >
-                          {medicamento.activo ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </td>
+                        <td className="px-4 py-4 font-semibold text-slate-900">
+                          {stockActual}
+                        </td>
 
-                    </tr>
+                        <td className="px-4 py-4 text-slate-600">
+                          {medicamento.stock_minimo}
+                        </td>
 
-                  ))}
+                        <td className="px-4 py-4">
+                          <span
+                            className={`inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${estadoStock.estilos}`}
+                          >
+                            {estadoStock.texto}
+                          </span>
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                              medicamento.activo
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-slate-200 text-slate-600'
+                            }`}
+                          >
+                            {medicamento.activo ? 'Activo' : 'Inactivo'}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
-
               </table>
             </div>
-
           )}
-
         </section>
       </main>
     </div>
