@@ -1,6 +1,8 @@
+
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LockKeyhole, Pill, User } from 'lucide-react'
+import axios from 'axios'
 
 import { login } from '../services/authService'
 
@@ -20,7 +22,7 @@ function LoginPage() {
 
     try {
       const tokens = await login({
-        username,
+        username: username.trim(),
         password,
       })
 
@@ -28,8 +30,38 @@ function LoginPage() {
       localStorage.setItem('refreshToken', tokens.refresh)
 
       navigate('/dashboard', { replace: true })
-    } catch {
-      setError('Usuario o contraseña incorrectos.')
+    } catch (err: unknown) {
+      console.error('Error al iniciar sesión:', err)
+
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status
+
+        if (!err.response) {
+          setError(
+            'No se pudo conectar con el servidor de usuarios. Verifica que Django esté funcionando.'
+          )
+        } else if (status === 401) {
+          setError(
+            'El servidor rechazó las credenciales. Error 401.'
+          )
+        } else if (status === 400) {
+          setError(
+            'El servidor no pudo validar los datos de acceso. Error 400.'
+          )
+        } else if (status === 403) {
+          setError(
+            'Acceso denegado por el servidor. Error 403.'
+          )
+        } else {
+          setError(
+            `Error del servidor: ${status ?? 'desconocido'}. Revisa la consola.`
+          )
+        }
+      } else {
+        setError(
+          'Ocurrió un error inesperado al iniciar sesión.'
+        )
+      }
     } finally {
       setLoading(false)
     }

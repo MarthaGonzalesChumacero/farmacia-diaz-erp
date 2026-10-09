@@ -73,3 +73,42 @@ export async function crearMedicamento(
 
   return response.data
 }
+
+ // ======================================
+ // Lotes
+ // ======================================
+
+export interface Lote {
+  id: number
+  numero_lote: string
+  fecha_vencimiento: string
+  cantidad_inicial: number
+  cantidad_actual: number
+  precio_compra: string
+  precio_venta: string
+  activo: boolean
+  medicamento: number
+  medicamento_nombre?: string
+}
+
+export interface NuevoLote {
+  numero_lote: string
+  fecha_vencimiento: string
+  cantidad_inicial: number
+  cantidad_actual: number
+  precio_compra: string
+  precio_venta: string
+  activo: boolean
+  medicamento: number
+}
+
+export async function getLotes(): Promise<Lote[]> {
+  const response = await inventarioApi.get<Lote[]>('/lotes/')
+  return response.data
+}
+
+export async function crearLote(lote: NuevoLote): Promise<Lote> {
+  const response = await inventarioApi.post<Lote>('/lotes/', lote)
+  return response.data
+}
+

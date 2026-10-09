@@ -1,3 +1,4 @@
+
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -165,11 +166,14 @@ STATIC_URL = 'static/'
 
 
 # CORS
-# Permite que el frontend React se comunique con este microservicio.
+# Permite la comunicación entre React y Django.
+# Puertos utilizados durante el desarrollo.
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:5174',
 ]
 
 

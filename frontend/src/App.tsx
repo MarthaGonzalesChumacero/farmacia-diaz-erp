@@ -6,6 +6,8 @@ import DashboardPage from './pages/DashboardPage'
 import InventarioPage from './pages/InventarioPage'
 import LoginPage from './pages/LoginPage'
 import RegistrarMedicamentoPage from './pages/RegistrarMedicamentoPage'
+import RegistrarLotePage from './pages/RegistrarLotePage'
+import ConsultarLotesPage from './pages/ConsultarLotesPage'
 
 function App() {
   return (
@@ -43,6 +45,24 @@ function App() {
         element={
           <ProtectedRoute>
             <RegistrarMedicamentoPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/inventario/lotes"
+        element={
+          <ProtectedRoute>
+            <ConsultarLotesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/inventario/lotes/registrar"
+        element={
+          <ProtectedRoute>
+            <RegistrarLotePage />
           </ProtectedRoute>
         }
       />
