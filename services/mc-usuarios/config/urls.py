@@ -9,6 +9,12 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+from usuarios.serializers import UsuarioTokenObtainPairSerializer
+
+
+class UsuarioTokenObtainPairView(TokenObtainPairView):
+    serializer_class = UsuarioTokenObtainPairSerializer
+
 
 urlpatterns = [
     path(
@@ -23,7 +29,7 @@ urlpatterns = [
 
     path(
         'api/token/',
-        TokenObtainPairView.as_view(),
+        UsuarioTokenObtainPairView.as_view(),
         name='token_obtain_pair',
     ),
 

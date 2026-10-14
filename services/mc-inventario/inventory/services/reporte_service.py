@@ -9,19 +9,17 @@ class ReporteService:
 
     @staticmethod
     def obtener_reporte_stock_critico():
-        lotes = ReporteRepository.obtener_stock_critico()
+        medicamentos = ReporteRepository.obtener_stock_critico()
 
         reporte = []
 
-        for lote in lotes:
+        for medicamento in medicamentos:
             reporte.append(
                 {
-                    "medicamento_id": lote.medicamento.id,
-                    "medicamento": lote.medicamento.nombre,
-                    "numero_lote": lote.numero_lote,
-                    "stock_actual": lote.cantidad_actual,
-                    "stock_minimo": lote.medicamento.stock_minimo,
-                    "fecha_vencimiento": lote.fecha_vencimiento,
+                    "medicamento_id": medicamento.id,
+                    "medicamento": medicamento.nombre,
+                    "stock_actual": medicamento.stock_actual,
+                    "stock_minimo": medicamento.stock_minimo,
                 }
             )
 
@@ -64,6 +62,34 @@ class ReporteService:
     @staticmethod
     def obtener_reporte_kardex():
         movimientos = ReporteRepository.obtener_kardex()
+        return ReporteService._serializar_movimientos(movimientos)
+
+    @staticmethod
+    def obtener_reporte_movimientos(
+        tipo=None,
+        medicamento_id=None,
+        desde=None,
+        hasta=None,
+    ):
+        movimientos = ReporteRepository.obtener_kardex()
+        if tipo:
+            movimientos = movimientos.filter(tipo=tipo)
+        if medicamento_id:
+            movimientos = movimientos.filter(
+                lote__medicamento_id=medicamento_id
+            )
+        if desde:
+            movimientos = movimientos.filter(
+                fecha_movimiento__date__gte=desde
+            )
+        if hasta:
+            movimientos = movimientos.filter(
+                fecha_movimiento__date__lte=hasta
+            )
+        return ReporteService._serializar_movimientos(movimientos)
+
+    @staticmethod
+    def _serializar_movimientos(movimientos):
 
         reporte = []
 

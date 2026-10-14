@@ -26,6 +26,34 @@ export interface UsuarioActual {
   activo: boolean
 }
 
+export type RolUsuario = UsuarioActual['rol']
+
+export interface NuevoUsuario {
+  username: string
+  password: string
+  first_name: string
+  last_name: string
+  email: string
+  rol: RolUsuario
+  telefono: string
+  activo: boolean
+}
+
+export type ActualizacionUsuario = Partial<
+  Omit<NuevoUsuario, 'password'>
+>
+
+export interface EventoAuditoriaUsuario {
+  id: number
+  actor_id: number
+  actor_username: string
+  accion: string
+  usuario_id: number
+  usuario_username: string
+  cambios: Record<string, unknown>
+  fecha_evento: string
+}
+
 // ======================================
 // Iniciar sesión
 // ======================================
@@ -90,5 +118,51 @@ export async function getUsuarios(): Promise<UsuarioActual[]> {
     },
   )
 
+  return response.data
+}
+
+export async function crearUsuario(
+  usuario: NuevoUsuario,
+): Promise<UsuarioActual> {
+  const accessToken = getAccessToken()
+  const response = await usuariosApi.post<UsuarioActual>(
+    '/usuarios/',
+    usuario,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  )
+  return response.data
+}
+
+export async function actualizarUsuario(
+  id: number,
+  cambios: ActualizacionUsuario,
+): Promise<UsuarioActual> {
+  const accessToken = getAccessToken()
+  const response = await usuariosApi.patch<UsuarioActual>(
+    `/usuarios/${id}/`,
+    cambios,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  )
+  return response.data
+}
+
+export async function getAuditoriaUsuarios(): Promise<EventoAuditoriaUsuario[]> {
+  const accessToken = getAccessToken()
+  const response = await usuariosApi.get<EventoAuditoriaUsuario[]>(
+    '/auditoria/',
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  )
   return response.data
 }

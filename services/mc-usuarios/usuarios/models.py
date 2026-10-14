@@ -29,3 +29,22 @@ class Usuario(AbstractUser):
 
     def __str__(self):
         return f'{self.username} - {self.get_rol_display()}'
+
+
+class RegistroAuditoriaUsuario(models.Model):
+    actor_id = models.PositiveBigIntegerField()
+    actor_username = models.CharField(max_length=150)
+    accion = models.CharField(max_length=30)
+    usuario_id = models.PositiveBigIntegerField()
+    usuario_username = models.CharField(max_length=150)
+    cambios = models.JSONField(default=dict, blank=True)
+    fecha_evento = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-fecha_evento',)
+        indexes = [
+            models.Index(
+                fields=('usuario_id', 'fecha_evento'),
+                name='user_audit_target_idx',
+            ),
+        ]

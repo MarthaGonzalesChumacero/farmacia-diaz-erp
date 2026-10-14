@@ -13,10 +13,7 @@ load_dotenv(BASE_DIR / '.env')
 
 # Seguridad
 
-SECRET_KEY = os.getenv(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-desarrollo-mc-usuarios'
-)
+SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
@@ -174,6 +171,10 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5173',
     'http://localhost:5174',
     'http://127.0.0.1:5174',
+    'http://localhost:5175',
+    'http://127.0.0.1:5175',
+    'http://localhost:5176',
+    'http://127.0.0.1:5176',
 ]
 
 

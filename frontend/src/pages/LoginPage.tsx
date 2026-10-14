@@ -1,7 +1,7 @@
 
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LockKeyhole, Pill, User } from 'lucide-react'
+import { Eye, EyeOff, LockKeyhole, Pill, User } from 'lucide-react'
 import axios from 'axios'
 
 import { login } from '../services/authService'
@@ -11,6 +11,7 @@ function LoginPage() {
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -131,14 +132,24 @@ function LoginPage() {
 
               <input
                 id="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="Ingrese su contraseña"
                 autoComplete="current-password"
                 required
-                className="w-full rounded-lg border border-slate-300 py-3 pl-11 pr-4 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-lg border border-slate-300 py-3 pl-11 pr-12 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-pressed={showPassword}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-slate-500 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+              </button>
             </div>
           </div>
 

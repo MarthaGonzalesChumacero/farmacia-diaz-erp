@@ -6,19 +6,25 @@ import {
   AlertTriangle,
   ArrowLeft,
   Barcode,
+  FileBarChart2,
   Package,
   Pill,
   Plus,
   RefreshCw,
+  QrCode,
   Search,
+  Truck,
 } from 'lucide-react'
 
 import {
+  actualizarMedicamento,
   getMedicamentos,
   getLotes,
   type Medicamento,
   type Lote,
 } from '../services/inventarioService'
+import { getUsuarioActual } from '../services/authService'
+import CodigoQRDialog from '../components/CodigoQRDialog'
 
 function InventarioPage() {
   const navigate = useNavigate()
@@ -28,6 +34,8 @@ function InventarioPage() {
   const [busqueda, setBusqueda] = useState('')
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
+  const [medicamentoQR, setMedicamentoQR] = useState<Medicamento | null>(null)
+  const [esAdministrador, setEsAdministrador] = useState(false)
 
   // Cargar medicamentos y lotes desde Django
 
@@ -36,13 +44,15 @@ function InventarioPage() {
     setError('')
 
     try {
-      const [datosMedicamentos, datosLotes] = await Promise.all([
+      const [datosMedicamentos, datosLotes, usuario] = await Promise.all([
         getMedicamentos(),
         getLotes(),
+        getUsuarioActual(),
       ])
 
       setMedicamentos(datosMedicamentos)
       setLotes(datosLotes)
+      setEsAdministrador(usuario.rol === 'administrador')
     } catch (err) {
       console.error('Error al cargar inventario:', err)
       setError('No se pudo cargar el inventario desde el servidor.')
@@ -189,14 +199,45 @@ function InventarioPage() {
               Ver lotes
             </button>
 
+            {esAdministrador && (
+              <button
+                type="button"
+                onClick={() => navigate('/inventario/proveedores')}
+                className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
+              >
+                <Truck size={18} />
+                Proveedores
+              </button>
+            )}
+
             <button
+              type="button"
+              onClick={() => navigate('/inventario/identificar')}
+              className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              <Barcode size={18} />
+              Escanear código
+            </button>
+
+            {esAdministrador && (
+              <button
+                type="button"
+                onClick={() => navigate('/inventario/reportes')}
+                className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
+              >
+                <FileBarChart2 size={18} />
+                Reportes
+              </button>
+            )}
+
+            {esAdministrador && <button
               type="button"
               onClick={() => navigate('/inventario/registrar')}
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
             >
               <Plus size={20} />
               Nuevo medicamento
-            </button>
+            </button>}
           </div>
         </div>
 
@@ -293,6 +334,9 @@ function InventarioPage() {
                     <th className="px-4 py-3 font-semibold">
                       Estado
                     </th>
+                    <th className="px-4 py-3 font-semibold text-right">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
 
@@ -344,6 +388,44 @@ function InventarioPage() {
                             {estadoStock.texto}
                           </span>
                         </td>
+                        <td className="px-4 py-4 text-right">
+                          <div className="inline-flex gap-2">
+                            {esAdministrador && <>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/inventario/medicamentos/${medicamento.id}/editar`)}
+                              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                try {
+                                  await actualizarMedicamento(medicamento.id, {
+                                    activo: !medicamento.activo,
+                                  })
+                                  await cargarInventario()
+                                } catch {
+                                  setError('No se pudo cambiar el estado del medicamento.')
+                                }
+                              }}
+                              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            >
+                              {medicamento.activo ? 'Desactivar' : 'Activar'}
+                            </button>
+                            </>}
+                            <button
+                              type="button"
+                              onClick={() => setMedicamentoQR(medicamento)}
+                              aria-label={`Mostrar QR de ${medicamento.nombre}`}
+                              title="Mostrar QR"
+                              className="rounded-lg border border-slate-300 p-2 text-slate-700 hover:bg-slate-50"
+                            >
+                              <QrCode size={17} />
+                            </button>
+                          </div>
+                        </td>
 
                         <td className="px-4 py-4">
                           <span
@@ -365,6 +447,14 @@ function InventarioPage() {
           )}
         </section>
       </main>
+      {medicamentoQR && (
+        <CodigoQRDialog
+          titulo={medicamentoQR.nombre}
+          detalle={`Código de barras ${medicamentoQR.codigo_barras}`}
+          valor={`FDE:MED:${medicamentoQR.id}`}
+          onCerrar={() => setMedicamentoQR(null)}
+        />
+      )}
     </div>
   )
 }

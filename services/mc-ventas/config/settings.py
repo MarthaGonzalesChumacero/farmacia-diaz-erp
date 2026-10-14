@@ -25,11 +25,11 @@ load_dotenv(BASE_DIR / '.env')
 # Seguridad
 # ======================================
 
-SECRET_KEY = (
-    'django-insecure-vo3qnyab1z#5oxt)+m_ipsa&&1zn1yo'
-    '$p$gef--wyh!1)onk5)'
-)
+# Obtener la clave secreta desde las variables de entorno.
+# Nunca guardar claves reales en el código fuente.
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
+# Configuración para desarrollo local
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -81,6 +81,8 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
+    'http://localhost:5176',
+    'http://127.0.0.1:5176',
 ]
 
 

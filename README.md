@@ -13,9 +13,9 @@ El proyecto busca mejorar el control de medicamentos, lotes, movimientos de inve
 
 El sistema utiliza una arquitectura basada en microservicios, donde cada servicio tiene responsabilidades específicas y se comunica mediante APIs REST.
 
-**Estado general: EN DESARROLLO.**
+**Estado general: prototipo académico funcional en entorno de desarrollo.**
 
-El sistema cuenta con funcionalidades implementadas y probadas, pero todavía no está terminado ni preparado para utilizarse en producción.
+El sistema implementa inventario, ventas, control de stock, alertas, administración de usuarios, QR/códigos y reportes. La comunicación se realiza directamente entre el frontend y las APIs; no existe API Gateway. La configuración actual usa servidores Django/Vite de desarrollo y no debe exponerse como despliegue de producción.
 
 ---
 
@@ -47,71 +47,45 @@ El proyecto cuenta con tres microservicios principales:
 
 También dispone de un frontend desarrollado con React y TypeScript.
 
-### 4.1. Funcionalidades implementadas y probadas
+### 4.1. Funcionalidades implementadas
 
-**Backend:**
+**Inventario (`mc-inventario`):**
 
-- API REST de inventario.
-- Registro y consulta de medicamentos.
-- Gestión de categorías y laboratorios mediante API.
-- Gestión de lotes y movimientos de inventario mediante API.
-- Endpoints de alertas y reportes de inventario.
-- API REST de ventas.
-- Registro y consulta de ventas.
-- Cálculo de subtotales y totales.
-- Microservicio de usuarios.
-- Autenticación mediante JWT.
-- Consulta del usuario autenticado.
-- Consulta de usuarios registrados.
-- Ejecución de servicios mediante Docker Compose.
+- CRUD de medicamentos, categorías, laboratorios y proveedores; desactivación lógica sin borrado de datos.
+- Lotes asociados opcionalmente a proveedor. El stock inicial crea un movimiento de entrada.
+- Edición de metadatos del lote; cantidades protegidas para que solo cambien mediante movimientos.
+- Entradas, salidas, ajustes, bajas por vencimiento y descuentos de venta con kardex, motivo, saldo resultante y referencia.
+- Selección FEFO en ventas, excluyendo lotes vencidos y medicamentos inactivos.
+- Alertas pendientes/revisadas y tareas programadas de stock/vencimientos.
+- Reportes de stock crítico agregado, vencimientos y movimientos filtrables.
+- Auditoría de operaciones con actor validado cuando el JWT está disponible; lectura restringida al rol Administrador.
+
+**Ventas (`mc-ventas`):**
+
+- Registro e historial con cálculo de subtotales y totales.
+- Descuento de existencias mediante endpoint transaccional de inventario.
+- Referencias idempotentes. Ventas incompletas quedan pendientes y pueden reintentarse sin repetir descuentos.
+
+**Usuarios (`mc-usuarios`):**
+
+- Autenticación JWT, endpoint de identidad, roles Administrador/Auxiliar y gestión administrativa protegida.
+- Cuentas desactivadas no pueden obtener JWT; la API no expone borrado ni edición de contraseñas existentes.
+- Auditoría de altas, activaciones, desactivaciones y cambios de rol, visible solo para Administradores.
 
 **Frontend:**
 
-- Pantalla de inicio de sesión.
-- Autenticación con JWT.
-- Rutas protegidas.
-- Dashboard administrativo.
-- Visualización de medicamentos registrados.
-- Visualización de ventas registradas.
-- Visualización de alertas.
-- Visualización de usuarios registrados.
-- Pantalla de inventario.
-- Listado de medicamentos desde la API.
-- Búsqueda por nombre, principio activo y código de barras.
-- Registro de nuevos medicamentos.
-- Validación de campos obligatorios.
-- Mensajes de confirmación y error.
-- Navegación entre Dashboard, Inventario y Registro.
-- Cierre de sesión.
-- Diseño adaptable mediante Tailwind CSS.
+- Login, Dashboard, Inventario, Control de stock, Ventas, Alertas, Usuarios, Proveedores e Informes.
+- Edición y desactivación lógica de medicamentos/lotes; movimientos auditables.
+- Generación de QR internos `FDE:MED:<id>` y `FDE:LOTE:<id>`; lector de cámara ZXing para QR/códigos de barras y búsqueda manual.
+- Exportación CSV de reportes.
 
-### 4.2. Funcionalidades en proceso
+### 4.2. Alcance pendiente de producción
 
-- Edición de medicamentos desde el frontend.
-- Desactivación y administración de medicamentos.
-- Gestión visual de categorías y laboratorios.
-- Registro de lotes desde el frontend.
-- Control de existencias por lote.
-- Gestión visual de entradas, salidas y ajustes.
-- Pantalla de ventas.
-- Integración entre ventas e inventario.
-- Validación de stock durante las ventas.
-- Actualización automática de existencias.
-- Mejoras en permisos y autorización.
-
-### 4.3. Funcionalidades pendientes
-
-- Lectura y generación de códigos QR.
-- Integración completa de códigos de barras.
-- Gestión de proveedores desde la interfaz.
-- Reportes administrativos y gráficos.
-- Historial completo de auditoría.
-- Gestión integral de alertas desde el frontend.
-- API Gateway.
-- Pruebas de integración completas.
-- Pruebas de seguridad.
-- Preparación para producción.
-- Despliegue del ERP.
+- API Gateway, si el despliegue académico requiere una entrada centralizada.
+- Endurecimiento de secretos, `DEBUG`, CORS y servidores de producción.
+- Validación manual de cámara/lectores físicos, impresoras y aceptación de usuarios.
+- Estrategia automática de reintentos/compensación para fallos distribuidos entre ventas e inventario.
+- Monitoreo, copias de seguridad operativas y despliegue productivo.
 
 ---
 
@@ -173,127 +147,36 @@ Cada microservicio administra una responsabilidad específica y expone endpoints
            └────────────────────────────────────┘
 ```
 
-**Nota:** El frontend actualmente consume directamente las APIs de los microservicios.
+**Arquitectura real:** el frontend consume directamente `mc-inventario`, `mc-ventas` y `mc-usuarios` por HTTP/REST. Cada servicio usa su propia base PostgreSQL. `mc-ventas` solicita a Inventario la operación FEFO; `mc-inventario` valida el JWT consultando `mc-usuarios` cuando atribuye eventos de auditoría. Redis/Celery/Beat se usan para tareas de inventario. No hay API Gateway.
 
-El API Gateway todavía no está implementado.
+### 5.2. Componentes fuera del alcance actual
 
-### 5.2. Arquitectura prevista
-
-```text
-                  ┌─────────────────────┐
-                  │       Frontend      │
-                  │ React + TypeScript  │
-                  └──────────┬──────────┘
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │     API Gateway     │
-                  │      PENDIENTE      │
-                  └──────────┬──────────┘
-                             │
-             ┌───────────────┼───────────────┐
-             │               │               │
-             ▼               ▼               ▼
-      ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-      │ Inventario  │ │   Ventas    │ │  Usuarios   │
-      └─────────────┘ └─────────────┘ └─────────────┘
-```
-
-El API Gateway permitirá centralizar las solicitudes, mejorar el control de acceso y facilitar la comunicación con los microservicios.
-
-Su incorporación corresponde a una etapa futura.
+No hay API Gateway. Para el prototipo académico el frontend consume directamente las tres APIs. Un Gateway o balanceador puede evaluarse en un despliegue futuro, pero no es requisito para ejecutar los módulos actuales.
 
 ---
 
 ## 6. Microservicio de Inventario
 
-**Nombre:** `mc-inventario`
+**Servicio:** `mc-inventario` · Django REST Framework · PostgreSQL · Redis/Celery.
 
-**Tecnologías:**
+Administra categorías, laboratorios, medicamentos, proveedores, lotes, movimientos, alertas, auditoría y reportes. Las rutas raíz de la API son `http://localhost:8000/`.
 
-- Python
-- Django
-- Django REST Framework
-- PostgreSQL
-- Docker
-- Redis
-- Celery
-- Celery Beat
+| Recurso | Operaciones principales |
+|---|---|
+| `/medicamentos/` | GET/POST/PATCH; desactivación lógica mediante `activo`. No hay borrado físico por API. |
+| `/proveedores/` | GET/POST/PATCH; directorio y desactivación lógica, no compras. |
+| `/lotes/` | GET/POST/PATCH de metadatos. Cantidades no editables; no hay borrado. |
+| `/movimientos/` | GET/POST de entrada, salida, ajustes y baja por vencimiento. Cada operación exige motivo. |
+| `/movimientos/registrar-venta/` | POST idempotente; descuenta lotes FEFO vigentes dentro de una transacción. |
+| `/movimientos/reporte-kardex/` | GET con filtros opcionales `tipo`, `medicamento`, `desde`, `hasta`. |
+| `/alertas/` | GET y PATCH `/alertas/{id}/estado/`; pendientes y revisadas. |
+| `/alertas/reporte-stock-critico/` | GET, stock agregado por medicamento excluyendo lotes vencidos. |
+| `/alertas/reporte-vencimientos/?dias=30` | GET, lotes vigentes por vencer. |
+| `/auditoria/` | GET de solo lectura; acceso de Administrador. |
 
-### 6.1. Responsabilidades
+El alta de lote crea un movimiento de entrada por su cantidad inicial. Ajustar existencias siempre requiere registrar un movimiento; Django Admin también mantiene lotes, kardex y auditoría como solo lectura.
 
-El microservicio administra los datos y procesos relacionados con el inventario.
-
-Incluye:
-
-- Categorías.
-- Laboratorios.
-- Medicamentos.
-- Lotes.
-- Movimientos de inventario.
-- Entradas.
-- Salidas.
-- Ajustes.
-- Stock mínimo.
-- Alertas.
-- Fechas de vencimiento.
-- Reportes de inventario.
-- Kardex de movimientos.
-
-Estas funcionalidades se han desarrollado principalmente a nivel de backend.
-
-La integración completa de todas ellas con el frontend continúa en proceso.
-
-### 6.2. Endpoints principales
-
-```http
-GET    /medicamentos/
-POST   /medicamentos/
-GET    /alertas/
-```
-
-Otros endpoints desarrollados incluyen:
-
-```text
-/lotes/
-/movimientos/
-/alertas/verificar-vencimientos/
-/alertas/reporte-stock-critico/
-/alertas/reporte-vencimientos/
-/movimientos/reporte-kardex/
-```
-
-### 6.3. Registro de medicamentos
-
-El frontend permite registrar medicamentos mediante un formulario.
-
-Los campos disponibles son:
-
-- Nombre.
-- Principio activo.
-- Presentación.
-- Código de barras.
-- Registro sanitario.
-- Stock mínimo.
-- Unidad de medida.
-- Descripción.
-
-El formulario envía una solicitud HTTP POST al microservicio.
-
-El backend valida los datos y guarda el registro en la base de datos.
-
-**Importante:** Registrar un medicamento no equivale a ingresar existencias físicas. El stock real debe controlarse mediante lotes y movimientos de inventario.
-
-### 6.4. Funcionalidades pendientes en el frontend
-
-- Editar medicamentos.
-- Gestionar categorías.
-- Gestionar laboratorios.
-- Registrar lotes.
-- Registrar movimientos.
-- Consultar existencias por lote.
-- Mostrar vencimientos.
-- Administrar alertas.
+El stock crítico compara la suma de lotes activos y no vencidos con `stock_minimo`. Las tareas Celery revisan stock y vencimientos diariamente.
 
 ---
 
@@ -377,20 +260,18 @@ Total: Bs 20.00
 ### 7.4. Endpoints
 
 ```http
-GET    /ventas/
-POST   /ventas/
-GET    /ventas/{id}/
-PUT    /ventas/{id}/
-DELETE /ventas/{id}/
+GET  /ventas/
+POST /ventas/
+GET  /ventas/{id}/
 ```
+
+La API no expone PUT/DELETE: una venta completada no se edita ni elimina sin un flujo compensatorio de devolución.
 
 ### 7.5. Estado de integración
 
-El microservicio de ventas ya responde a solicitudes desde el frontend.
+El frontend permite registrar ventas e inspeccionar el historial. Ventas crea primero la operación en estado `pendiente` y llama a Inventario con la misma referencia. Inventario elige lotes vigentes por FEFO y procesa los movimientos de forma atómica. Si la comunicación falla, la venta queda pendiente y puede reintentarse desde el historial. Repetir la referencia no duplica descuentos.
 
-El Dashboard consulta las ventas registradas.
-
-Sin embargo, todavía falta implementar el flujo completo de ventas desde la interfaz web y su integración automática con el stock de inventario.
+La transacción distribuida entre dos bases separadas no es ACID: los pendientes requieren reintento manual; no hay todavía outbox ni compensación automática.
 
 ---
 
@@ -400,12 +281,11 @@ Sin embargo, todavía falta implementar el flujo completo de ventas desde la int
 
 ### 8.1. Funcionalidades implementadas
 
-- Autenticación de usuarios.
-- Generación de tokens JWT.
-- Consulta del usuario autenticado.
-- Consulta de usuarios registrados.
-- Identificación de roles.
-- Integración con el frontend.
+- JWT en `/api/token/` y renovación en `/api/token/refresh/`.
+- Identidad autenticada en `/usuarios/me/`.
+- CRUD administrativo sin borrado, con altas, edición, roles y activación/desactivación.
+- Roles `administrador` y `auxiliar`, validados por el backend.
+- Auditoría de administración en `/auditoria/`, disponible solo para Administradores.
 
 ### 8.2. Roles
 
@@ -427,13 +307,12 @@ Las pantallas principales están protegidas mediante `ProtectedRoute`.
 
 El token de acceso se envía en las solicitudes autenticadas que lo requieren.
 
-### 8.4. Mejoras pendientes
+### 8.4. Reglas de acceso
 
-- Aplicar permisos específicos por rol en cada operación.
-- Mejorar la gestión de expiración y renovación de tokens.
-- Fortalecer la seguridad del almacenamiento de sesión.
-- Implementar auditoría de acciones.
-- Realizar pruebas de seguridad.
+- Solo Administrador lista, crea, edita, activa y desactiva cuentas.
+- Auxiliar puede autenticarse y consultar `/usuarios/me/`, pero no administrar usuarios ni leer auditoría.
+- Usuarios desactivados no obtienen JWT. La edición de usuario no acepta contraseñas; no existe borrado por API.
+- El Dashboard oculta la administración a auxiliares y la ruta `/usuarios` verifica el rol en el backend.
 
 **Nota:** Ocultar una pantalla en React no reemplaza la autorización que debe aplicar el backend.
 
@@ -496,18 +375,30 @@ Permite:
 - Mostrar confirmación de registro.
 - Regresar al inventario.
 
-### 9.5. Funcionalidades pendientes del frontend
+### 9.5. Módulos frontend
 
-- Edición de medicamentos.
-- Eliminación lógica o desactivación.
-- Gestión de lotes.
-- Gestión de proveedores.
-- Control de stock.
-- Gestión de ventas.
-- Alertas visuales.
-- Reportes.
-- Auditoría.
-- Administración completa de usuarios.
+- **Inventario:** búsqueda por texto/código, edición y desactivación lógica de medicamentos; proveedores; alta/consulta/edición de metadatos de lotes.
+- **Control de stock:** existencias utilizables, stock crítico, agotados, vencimientos y kardex; movimientos con motivo/referencia.
+- **Ventas:** registro, historial y reintento de ventas pendientes con la misma referencia.
+- **Alertas:** pendientes/revisadas, reapertura y verificación manual de vencimientos.
+- **Usuarios:** gestión exclusiva de Administradores; edición sin campo para contraseñas existentes.
+- **Identificación:** QR internos `FDE:MED:<id>` y `FDE:LOTE:<id>`; lectura de QR/códigos 1D por cámara, lector USB o entrada manual.
+- **Reportes:** stock crítico, vencimientos, kardex filtrado y auditoría; exportación CSV.
+
+### 9.6. Rutas de trabajo
+
+| Ruta | Acceso/uso |
+|---|---|
+| `/inventario` | Catálogo, alta/edición/desactivación de medicamentos; acceso a proveedores, lotes, lector y reportes. |
+| `/inventario/stock` | Existencias, movimientos auditables, vencimientos. |
+| `/inventario/proveedores` | Directorio asociado a lotes; no procesa compras. |
+| `/inventario/identificar` | Cámara, lector USB o texto para QR/código de barras. |
+| `/inventario/reportes` | Stock, vencimientos, kardex y, para Administradores, auditoría. |
+| `/alertas` | Revisión y reapertura de alertas. |
+| `/ventas` | Historial y reintento de pendientes. |
+| `/usuarios` | Solo Administrador. |
+
+El lector de cámara requiere permisos del navegador y un contexto seguro; `localhost` se considera seguro durante desarrollo. El lector USB funciona como entrada de texto.
 
 ---
 
@@ -560,11 +451,9 @@ Por ejemplo, el microservicio de ventas debe comunicarse con inventario mediante
        Genera alerta si corresponde
 ```
 
-**Estado: PENDIENTE DE INTEGRACIÓN COMPLETA.**
+**Estado: implementado con consistencia eventual.**
 
-Este diagrama representa el comportamiento previsto, no un flujo transaccional que ya esté terminado.
-
-La integración deberá contemplar validación de existencias, errores de comunicación, concurrencia y consistencia de datos.
+Inventario valida stock bajo bloqueo, excluye lotes vencidos/inactivos, procesa FEFO y reconoce una referencia ya aplicada. Ventas mantiene `pendiente` hasta que Inventario confirma el descuento y permite reintentar desde el historial. Los servicios conservan bases separadas; no existe transacción ACID distribuida ni reintento automático por outbox.
 
 ---
 
@@ -575,8 +464,7 @@ La integración deberá contemplar validación de existencias, errores de comuni
 | Python | Backend | Implementado |
 | Django | Microservicios | Implementado |
 | Django REST Framework | APIs REST | Implementado |
-| PostgreSQL | Persistencia de inventario | Implementado |
-| SQLite | Base de datos inicial de ventas | En desarrollo |
+| PostgreSQL | Bases independientes de inventario, ventas y usuarios | Implementado |
 | React | Frontend | Implementado |
 | TypeScript | Frontend | Implementado |
 | Vite | Desarrollo y compilación | Implementado |
@@ -590,8 +478,9 @@ La integración deberá contemplar validación de existencias, errores de comuni
 | Celery | Tareas asíncronas | Implementado en inventario |
 | Celery Beat | Tareas programadas | Implementado en inventario |
 | Swagger/OpenAPI | Documentación de API | Implementado en inventario |
-| API Gateway | Entrada centralizada | Pendiente |
-| Códigos QR | Digitalización | Pendiente de integración |
+| API Gateway | Entrada centralizada | No implementado; los servicios exponen puertos directos |
+| ZXing Browser | Lectura QR y códigos 1D en navegador | Implementado |
+| qrcode.react | Generación de QR SVG | Implementado |
 
 ---
 
@@ -599,42 +488,16 @@ La integración deberá contemplar validación de existencias, errores de comuni
 
 ```text
 farmacia-diaz-erp/
-│
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   │   ├── inventarioApi.ts
-│   │   │   └── ventasApi.ts
-│   │   │
-│   │   ├── components/
-│   │   │   └── ProtectedRoute.tsx
-│   │   │
-│   │   ├── pages/
-│   │   │   ├── LoginPage.tsx
-│   │   │   ├── DashboardPage.tsx
-│   │   │   ├── InventarioPage.tsx
-│   │   │   └── RegistrarMedicamentoPage.tsx
-│   │   │
-│   │   ├── services/
-│   │   │   ├── authService.ts
-│   │   │   ├── inventarioService.ts
-│   │   │   └── ventasService.ts
-│   │   │
-│   │   └── App.tsx
-│   │
-│   ├── package.json
-│   └── vite.config.ts
-│
+├── frontend/                 # React, TypeScript, Vite, Tailwind
 ├── services/
-│   ├── mc-inventario/
-│   ├── mc-ventas/
-│   └── mc-usuarios/
-│
-├── docker-compose.yml
+│   ├── mc-inventario/        # Medicamentos, proveedores, lotes, kardex, alertas
+│   ├── mc-ventas/            # Ventas y comunicación HTTP con inventario
+│   └── mc-usuarios/          # JWT, roles y administración de cuentas
+├── docker-compose.yml        # Tres APIs, tres PostgreSQL, Redis y Celery
 └── README.md
 ```
 
-Esta estructura muestra los componentes principales del proyecto.
+Cada microservicio conserva su propio modelo y base de datos. El frontend consume APIs HTTP directamente; no comparte tablas entre servicios.
 
 ---
 
@@ -665,18 +528,22 @@ cd farmacia-diaz-erp
 
 ### 13.3. Configuración
 
-Los microservicios pueden requerir variables de entorno y configuración de bases de datos.
+Docker Compose espera un archivo `.env` local en cada servicio, ignorado por Git. Define las variables requeridas sin reutilizar contraseñas de producción:
 
-Antes de ejecutar el proyecto en otro equipo, deben configurarse las credenciales y los servicios correspondientes.
+| Servicio | Variables |
+|---|---|
+| `mc-inventario` | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`, `DJANGO_SECRET_KEY` (recomendado; si falta, desarrollo usa `POSTGRES_PASSWORD` como fallback) |
+| `mc-ventas` | Las cinco anteriores y `INVENTARIO_API_URL` (en Compose: `http://mc-inventario:8000`) |
+| `mc-usuarios` | Las cinco anteriores, `DJANGO_SECRET_KEY` y `DEBUG` |
 
-No se deben publicar contraseñas, claves secretas ni archivos `.env` con datos sensibles.
+No compartas ni subas archivos `.env`, claves JWT o contraseñas. Los valores por defecto actuales son para desarrollo; antes de producción hay que externalizar secretos y desactivar `DEBUG`.
 
 ### 13.4. Iniciar los contenedores
 
 Desde la carpeta principal:
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
 Para revisar el estado:
@@ -685,7 +552,27 @@ Para revisar el estado:
 docker compose ps
 ```
 
-### 13.5. Iniciar el frontend
+### 13.5. Aplicar migraciones aditivas
+
+La primera instalación requiere crear el esquema de los tres servicios:
+
+```bash
+docker compose exec mc-inventario python manage.py migrate
+docker compose exec mc-ventas python manage.py migrate
+docker compose exec mc-usuarios python manage.py migrate
+```
+
+Las migraciones `inventory.0007` (proveedores y FK nullable), `inventory.0008` (auditoría) y `usuarios.0002` (auditoría de usuarios) son aditivas y conservan los registros existentes.
+
+### 13.6. Crear el primer administrador
+
+```bash
+docker compose exec mc-usuarios python manage.py createsuperuser
+```
+
+Entra a `http://localhost:8002/admin/` con esa cuenta y asígnale el rol `administrador` antes de usar la administración del ERP. Las cuentas nuevas desde el ERP requieren una contraseña inicial; las contraseñas existentes no se cambian.
+
+### 13.7. Iniciar el frontend
 
 ```bash
 cd frontend
@@ -703,19 +590,20 @@ Ejecutar:
 pnpm dev
 ```
 
-Abrir:
+Vite usa el puerto 5173 por defecto; si está ocupado selecciona el siguiente disponible. Abrir la URL que muestre la terminal, por ejemplo:
 
 ```text
 http://localhost:5173
 ```
 
-### 13.6. Compilar el frontend
+### 13.8. Compilar y verificar
 
 ```bash
 pnpm build
+pnpm lint
 ```
 
-La compilación permite verificar errores de TypeScript y generar los archivos de producción del frontend.
+Para ejecutar pruebas backend, usa `python manage.py test` dentro del contenedor del servicio. Django crea una base de pruebas temporal separada de la base operativa.
 
 ---
 
@@ -725,10 +613,11 @@ Durante las pruebas locales se utilizan:
 
 | Servicio | Dirección |
 |---|---|
-| Frontend | http://localhost:5173 |
-| Inventario | http://127.0.0.1:8000 |
-| Ventas | http://127.0.0.1:8001 |
-| Usuarios | http://127.0.0.1:8002 |
+| Frontend | `http://localhost:5173` (o puerto alternativo de Vite) |
+| Inventario API | `http://localhost:8000` |
+| Ventas API | `http://localhost:8001` |
+| Usuarios API | `http://localhost:8002` |
+| Django Admin de usuarios | `http://localhost:8002/admin/` |
 
 Estas direcciones corresponden al entorno de desarrollo local.
 
@@ -787,112 +676,20 @@ pnpm build
 
 La compilación del frontend terminó correctamente.
 
-### 15.6. Pruebas pendientes
+### 15.6. Resultados y verificación manual
 
-- Pruebas completas de integración.
-- Pruebas de concurrencia.
-- Pruebas de permisos.
-- Pruebas de seguridad.
-- Pruebas de rendimiento.
-- Validación integral de ventas y stock.
-- Pruebas de aceptación con usuarios.
+- En la última regresión pasaron 38 pruebas de inventario/reportes/auditoría, 12 de ventas y 11 de usuarios.
+- `pnpm build` pasa. `pnpm lint` conserva avisos de carga inicial en Inventario y Consulta de lotes.
+- La lectura física con cámara, impresora de etiquetas y prueba de aceptación en farmacia requieren verificación manual.
+- Antes de producción faltan pruebas de concurrencia con PostgreSQL, rendimiento, recuperación y despliegue seguro.
 
 ---
 
 ## 16. Plan de desarrollo
 
-### Etapa 1. Backend de inventario
+Las etapas funcionales académicas de inventario, ventas, usuarios, alertas, proveedores, digitalización, reportes y auditoría están implementadas. El cierre de grado se centra en la validación manual de hardware/operación, documentación de resultados y, si se requiere producción, endurecimiento y despliegue.
 
-**Estado: IMPLEMENTADO EN GRAN PARTE**
-
-- Medicamentos.
-- Categorías.
-- Laboratorios.
-- Lotes.
-- Movimientos.
-- Alertas.
-- Reportes.
-- Tareas automáticas.
-
-### Etapa 2. Backend de ventas
-
-**Estado: IMPLEMENTADO PARCIALMENTE**
-
-- Registro de ventas.
-- Detalles de venta.
-- Cálculos.
-- Consultas.
-
-Pendiente:
-
-- Integración automática con inventario.
-- Validación de stock.
-- Manejo de transacciones distribuidas.
-- Pruebas de integración.
-
-### Etapa 3. Usuarios y autenticación
-
-**Estado: IMPLEMENTADO PARCIALMENTE**
-
-- Login.
-- JWT.
-- Consulta de usuarios.
-- Identificación de roles.
-
-Pendiente:
-
-- Permisos detallados.
-- Gestión completa de usuarios.
-- Auditoría y mejoras de seguridad.
-
-### Etapa 4. Frontend
-
-**Estado: EN DESARROLLO**
-
-Implementado:
-
-- Login.
-- Dashboard.
-- Inventario.
-- Registro de medicamentos.
-
-En proceso:
-
-- Edición de medicamentos.
-- Gestión de lotes.
-- Ventas.
-- Alertas.
-- Control de stock.
-
-### Etapa 5. Integración general
-
-**Estado: PENDIENTE**
-
-- Comunicación entre ventas e inventario.
-- API Gateway.
-- Manejo integral de errores.
-- Consistencia de operaciones.
-- Pruebas entre microservicios.
-
-### Etapa 6. Digitalización y reportes
-
-**Estado: PENDIENTE**
-
-- Generación de códigos QR.
-- Lectura de códigos de barras.
-- Etiquetas de medicamentos.
-- Reportes administrativos.
-- Paneles de análisis.
-
-### Etapa 7. Validación final
-
-**Estado: PENDIENTE**
-
-- Pruebas funcionales completas.
-- Pruebas de seguridad.
-- Validación con usuarios.
-- Documentación final.
-- Preparación para despliegue.
+No se propone introducir API Gateway ni un módulo de compras: quedan fuera de la arquitectura y alcance actuales.
 
 ---
 
@@ -908,11 +705,11 @@ Las operaciones de venta e inventario deberán garantizar que las existencias no
 
 ### Seguridad
 
-El sistema debe reforzar la autenticación, autorización y protección de información sensible antes de utilizarse en un entorno real.
+Usuarios exige JWT, valida roles en backend y registra administración sin almacenar contraseñas en auditoría. Inventario valida el bearer consultando `mc-usuarios` para atribuir los eventos; si el servicio de identidad no responde, registra el evento como anónimo y mantiene disponible la operación.
 
 ### Trazabilidad
 
-Se prevé incorporar registros de auditoría para identificar operaciones y usuarios responsables.
+Inventario audita movimientos, ventas, catálogos y alertas; Usuarios audita administración de cuentas. La lectura está restringida al Administrador.
 
 ### Escalabilidad
 
@@ -922,17 +719,7 @@ La arquitectura de microservicios permite desarrollar y desplegar componentes de
 
 ## 18. Limitaciones actuales
 
-El proyecto todavía presenta limitaciones:
-
-- No todas las funcionalidades del backend tienen interfaz web.
-- La integración de ventas con inventario está pendiente.
-- No se dispone de un API Gateway.
-- El control de permisos requiere mejoras.
-- Las herramientas QR todavía no están integradas.
-- Faltan pruebas de integración y seguridad.
-- El sistema está configurado principalmente para desarrollo local.
-
-Por estas razones, el ERP todavía no debe considerarse un sistema listo para producción.
+El ERP está preparado como prototipo académico local, no como despliegue productivo. La venta distribuida usa idempotencia y estado pendiente con reintento manual; no implementa outbox/compensación automática. El lector de cámara depende de permisos del navegador y necesita comprobarse en el dispositivo final. La configuración Django actual usa servidores de desarrollo y requiere hardening para producción.
 
 ---
 
@@ -950,7 +737,7 @@ Por estas razones, el ERP todavía no debe considerarse un sistema listo para pr
 
 **Gestión:** 2026.
 
-**Estado:** En desarrollo.
+**Estado:** Prototipo académico funcional; requiere validación manual de operación y hardening antes de producción.
 
 ---
 
@@ -968,8 +755,4 @@ Repositorio: https://github.com/MarthaGonzalesChumacero/farmacia-diaz-erp
 
 ## 21. Conclusión
 
-Farmacia Díaz ERP se encuentra en desarrollo y ya dispone de componentes funcionales que permiten autenticar usuarios, consultar información de distintos microservicios y registrar medicamentos desde una interfaz web.
-
-El proyecto continuará con la administración de medicamentos, lotes, movimientos, ventas y alertas, además de la integración entre servicios y las herramientas de digitalización.
-
-El objetivo final es disponer de un sistema ERP que contribuya a mejorar el control, la trazabilidad y la gestión automatizada del inventario de la Farmacia Díaz.
+Farmacia Díaz ERP integra los tres microservicios existentes con PostgreSQL independiente, comunicación REST directa, operaciones de inventario auditables, ventas FEFO/idempotentes, administración por roles y herramientas de identificación QR/código de barras. Para cerrar el trabajo académico quedan las comprobaciones manuales del hardware y la aceptación operativa, además del endurecimiento requerido antes de un despliegue productivo.

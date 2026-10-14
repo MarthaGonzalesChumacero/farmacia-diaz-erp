@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.utils import timezone
+from rest_framework.test import APIClient
 
 from inventory.models import (
     Alerta,
@@ -7,14 +8,18 @@ from inventory.models import (
     Laboratorio,
     Medicamento,
     Lote,
+    RegistroAuditoria,
 )
 from inventory.services.stock_service import StockService
 from inventory.services.vencimiento_service import VencimientoService
+from inventory.tests.usuario_prueba import usuario_erp
 
 
 class AlertaServiceTests(TestCase):
 
     def setUp(self):
+        self.client = APIClient()
+        self.client.force_authenticate(user=usuario_erp())
         self.categoria = Categoria.objects.create(
             nombre="Vitaminas",
             descripcion="Prueba",
@@ -81,6 +86,32 @@ class AlertaServiceTests(TestCase):
 
         self.assertEqual(total, 1)
 
+    def test_stock_utilizable_excluye_lotes_vencidos(self):
+        hoy = timezone.localdate()
+        Lote.objects.create(
+            medicamento=self.medicamento,
+            numero_lote="LOTE-VALIDO-STOCK",
+            fecha_vencimiento=hoy + timezone.timedelta(days=30),
+            cantidad_inicial=4,
+            cantidad_actual=4,
+            precio_compra=10.00,
+            precio_venta=15.00,
+        )
+        Lote.objects.create(
+            medicamento=self.medicamento,
+            numero_lote="LOTE-VENCIDO-STOCK",
+            fecha_vencimiento=hoy - timezone.timedelta(days=1),
+            cantidad_inicial=40,
+            cantidad_actual=40,
+            precio_compra=10.00,
+            precio_venta=15.00,
+        )
+
+        self.assertEqual(
+            StockService.calcular_stock_total(self.medicamento),
+            4,
+        )
+
     def test_crea_alerta_vencimiento(self):
         hoy = timezone.now().date()
         fecha_vencimiento = hoy + timezone.timedelta(days=10)
@@ -141,3 +172,59 @@ class AlertaServiceTests(TestCase):
             segundo_resultado["alertas_creadas"],
             0,
         )
+
+    def test_api_permite_marcar_y_reabrir_alerta(self):
+        alerta = Alerta.objects.create(
+            medicamento=self.medicamento,
+            tipo="stock",
+            mensaje="Stock crítico de prueba",
+        )
+
+        marcar_leida = self.client.patch(
+            f"/alertas/{alerta.id}/estado/",
+            {"leida": True},
+            format="json",
+        )
+        alerta.refresh_from_db()
+
+        self.assertEqual(marcar_leida.status_code, 200)
+        self.assertTrue(alerta.leida)
+        self.assertTrue(
+            RegistroAuditoria.objects.filter(
+                entidad="alerta",
+                entidad_id=alerta.id,
+                accion="marcar_revisada",
+            ).exists()
+        )
+
+        marcar_pendiente = self.client.patch(
+            f"/alertas/{alerta.id}/estado/",
+            {"leida": False},
+            format="json",
+        )
+        alerta.refresh_from_db()
+
+        self.assertEqual(marcar_pendiente.status_code, 200)
+        self.assertFalse(alerta.leida)
+
+    def test_auxiliar_consulta_alertas_sin_cambiar_su_estado(self):
+        alerta = Alerta.objects.create(
+            medicamento=self.medicamento,
+            tipo="stock",
+            mensaje="Alerta solo lectura",
+        )
+        self.client.force_authenticate(
+            user=usuario_erp(101, "auxiliar-prueba", "auxiliar")
+        )
+
+        listar = self.client.get("/alertas/")
+        editar = self.client.patch(
+            f"/alertas/{alerta.id}/estado/",
+            {"leida": True},
+            format="json",
+        )
+
+        alerta.refresh_from_db()
+        self.assertEqual(listar.status_code, 200)
+        self.assertEqual(editar.status_code, 403)
+        self.assertFalse(alerta.leida)

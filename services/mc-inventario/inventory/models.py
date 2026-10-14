@@ -75,12 +75,33 @@ class Medicamento(models.Model):
         return self.nombre
 
 
+class Proveedor(models.Model):
+    nombre = models.CharField(max_length=150, unique=True)
+    contacto = models.CharField(max_length=150, blank=True)
+    telefono = models.CharField(max_length=30, blank=True)
+    email = models.EmailField(blank=True)
+    direccion = models.TextField(blank=True)
+    activo = models.BooleanField(default=True)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nombre
+
+
 class Lote(models.Model):
 
     medicamento = models.ForeignKey(
         Medicamento,
         on_delete=models.PROTECT,
         related_name='lotes',
+    )
+
+    proveedor = models.ForeignKey(
+        Proveedor,
+        on_delete=models.PROTECT,
+        related_name='lotes',
+        blank=True,
+        null=True,
     )
 
     numero_lote = models.CharField(
@@ -207,3 +228,32 @@ class Alerta(models.Model):
             f"{self.medicamento.nombre} - "
             f"{self.get_tipo_display()}"
         )
+
+
+class RegistroAuditoria(models.Model):
+    accion = models.CharField(max_length=40)
+    entidad = models.CharField(max_length=40)
+    entidad_id = models.PositiveBigIntegerField(null=True, blank=True)
+    actor_id = models.PositiveBigIntegerField(null=True, blank=True)
+    actor_username = models.CharField(max_length=150, blank=True)
+    referencia = models.CharField(max_length=120, blank=True)
+    detalles = models.JSONField(default=dict, blank=True)
+    direccion_ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=255, blank=True)
+    fecha_evento = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-fecha_evento",)
+        indexes = [
+            models.Index(
+                fields=("entidad", "entidad_id"),
+                name="audit_entidad_idx",
+            ),
+            models.Index(
+                fields=("accion", "fecha_evento"),
+                name="audit_accion_fecha_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.accion} {self.entidad}#{self.entidad_id}"

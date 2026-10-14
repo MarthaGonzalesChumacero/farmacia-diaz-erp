@@ -1,6 +1,26 @@
 import os
 
 import requests
+from rest_framework import status
+from rest_framework.exceptions import APIException
+
+
+class InventarioNoDisponible(APIException):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    default_detail = "El servicio de inventario no está disponible."
+    default_code = "inventario_no_disponible"
+
+
+class StockInsuficiente(APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = "No existe stock suficiente para completar la venta."
+    default_code = "stock_insuficiente"
+
+
+class VentaInventarioRechazada(APIException):
+    status_code = status.HTTP_502_BAD_GATEWAY
+    default_detail = "Inventario rechazó la operación de venta."
+    default_code = "venta_inventario_rechazada"
 
 
 class InventarioClient:
@@ -8,70 +28,29 @@ class InventarioClient:
     BASE_URL = os.getenv(
         'INVENTARIO_API_URL',
         'http://mc-inventario:8000',
-    )
+    ).rstrip('/')
 
     TIMEOUT = 5
 
     @classmethod
-    def obtener_lotes_por_medicamento(cls, medicamento_id):
-        try:
-            response = requests.get(
-                f'{cls.BASE_URL}/lotes/',
-                params={
-                    'medicamento': medicamento_id,
-                    'activo': 'true',
-                },
-                timeout=cls.TIMEOUT,
-            )
-
-            response.raise_for_status()
-
-            lotes = response.json()
-
-            return [
-                lote
-                for lote in lotes
-                if lote.get('medicamento') == medicamento_id
-                and lote.get('activo') is True
-                and lote.get('cantidad_actual', 0) > 0
-            ]
-
-        except requests.RequestException as error:
-            raise ConnectionError(
-                'No se pudo consultar el microservicio '
-                'de inventario.'
-            ) from error
-
-    @classmethod
-    def registrar_salida(
-        cls,
-        lote_id,
-        cantidad,
-        referencia,
-        motivo,
-    ):
-        datos = {
-            'tipo': 'salida',
-            'cantidad': cantidad,
-            'motivo': motivo,
-            'referencia': referencia,
-            'lote': lote_id,
-        }
-
+    def registrar_venta(cls, referencia, detalles, authorization=None):
+        headers = {}
+        if authorization:
+            headers['Authorization'] = authorization
         try:
             response = requests.post(
-                f'{cls.BASE_URL}/movimientos/',
-                json=datos,
+                f'{cls.BASE_URL}/movimientos/registrar-venta/',
+                json={
+                    'referencia': referencia,
+                    'detalles': detalles,
+                },
+                headers=headers,
                 timeout=cls.TIMEOUT,
             )
-
         except requests.RequestException as error:
-            raise ConnectionError(
-                'No se pudo conectar con el microservicio '
-                'de inventario.'
-            ) from error
+            raise InventarioNoDisponible() from error
 
-        if response.status_code == 400:
+        if response.status_code == status.HTTP_400_BAD_REQUEST:
             try:
                 detalle = response.json()
             except ValueError:
@@ -79,15 +58,19 @@ class InventarioClient:
                     'error': 'Inventario rechazó el movimiento.'
                 }
 
-            raise ValueError(detalle)
+            mensaje = str(detalle).lower()
+            if 'stock insuficiente' in mensaje:
+                raise StockInsuficiente(detalle)
+            raise VentaInventarioRechazada(detalle)
 
         try:
             response.raise_for_status()
-
         except requests.RequestException as error:
-            raise ConnectionError(
-                'Ocurrió un error al registrar la salida '
-                'en inventario.'
-            ) from error
+            raise InventarioNoDisponible() from error
 
-        return response.json()
+        try:
+            return response.json()
+        except ValueError as error:
+            raise InventarioNoDisponible(
+                'Inventario devolvió una respuesta inválida.'
+            ) from error

@@ -1,9 +1,14 @@
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 
 from .models import Venta
 from .serializers import VentaSerializer
 
 
-class VentaViewSet(viewsets.ModelViewSet):
+class VentaViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = Venta.objects.all().order_by('-fecha_venta')
     serializer_class = VentaSerializer

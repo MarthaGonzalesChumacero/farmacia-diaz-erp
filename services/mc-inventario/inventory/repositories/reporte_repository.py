@@ -1,9 +1,10 @@
 from datetime import timedelta
 
-from django.db.models import F
+from django.db.models import F, Q, Sum
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
-from inventory.models import Lote, MovimientoInventario
+from inventory.models import Lote, Medicamento, MovimientoInventario
 
 
 class ReporteRepository:
@@ -11,14 +12,23 @@ class ReporteRepository:
     @staticmethod
     def obtener_stock_critico():
         return (
-            Lote.objects.filter(
-                activo=True,
-                cantidad_actual__lte=F(
-                    "medicamento__stock_minimo"
-                ),
+            Medicamento.objects.filter(activo=True)
+            .annotate(
+                stock_actual=Coalesce(
+                    Sum(
+                        "lotes__cantidad_actual",
+                        filter=Q(
+                            lotes__activo=True,
+                            lotes__fecha_vencimiento__gte=(
+                                timezone.localdate()
+                            ),
+                        ),
+                    ),
+                    0,
+                )
             )
-            .select_related("medicamento")
-            .order_by("medicamento__nombre")
+            .filter(stock_actual__lte=F("stock_minimo"))
+            .order_by("nombre")
         )
 
     @staticmethod

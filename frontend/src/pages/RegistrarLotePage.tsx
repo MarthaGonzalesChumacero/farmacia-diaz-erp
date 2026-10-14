@@ -2,16 +2,19 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowLeft, PackagePlus, Save } from 'lucide-react'
+import { ArrowLeft, PackagePlus, Save, Truck } from 'lucide-react'
 import {
   crearLote,
   getMedicamentos,
+  getProveedores,
   type Medicamento,
   type NuevoLote,
+  type Proveedor,
 } from '../services/inventarioService'
 
 const formularioInicial = {
   medicamento: '',
+  proveedor: '',
   numero_lote: '',
   fecha_vencimiento: '',
   cantidad_inicial: '',
@@ -23,21 +26,28 @@ function RegistrarLotePage() {
   const navigate = useNavigate()
 
   const [medicamentos, setMedicamentos] = useState<Medicamento[]>([])
+  const [proveedores, setProveedores] = useState<Proveedor[]>([])
   const [formulario, setFormulario] = useState(formularioInicial)
   const [guardando, setGuardando] = useState(false)
   const [cargandoMedicamentos, setCargandoMedicamentos] = useState(true)
+  const [cargandoProveedores, setCargandoProveedores] = useState(true)
   const [error, setError] = useState('')
   const [exito, setExito] = useState('')
 
   useEffect(() => {
     async function cargarMedicamentos() {
       try {
-        const datos = await getMedicamentos()
+        const [datos, listaProveedores] = await Promise.all([
+          getMedicamentos(),
+          getProveedores(),
+        ])
         setMedicamentos(datos.filter((medicamento) => medicamento.activo))
+        setProveedores(listaProveedores.filter((proveedor) => proveedor.activo))
       } catch {
-        setError('No se pudo cargar la lista de medicamentos.')
+        setError('No se pudo cargar el catálogo de medicamentos y proveedores.')
       } finally {
         setCargandoMedicamentos(false)
+        setCargandoProveedores(false)
       }
     }
 
@@ -94,10 +104,10 @@ function RegistrarLotePage() {
 
     const nuevoLote: NuevoLote = {
       medicamento: Number(formulario.medicamento),
+      proveedor: formulario.proveedor ? Number(formulario.proveedor) : null,
       numero_lote: formulario.numero_lote.trim(),
       fecha_vencimiento: formulario.fecha_vencimiento,
       cantidad_inicial: cantidad,
-      cantidad_actual: cantidad,
       precio_compra: precioCompra.toFixed(2),
       precio_venta: precioVenta.toFixed(2),
       activo: true,
@@ -228,6 +238,38 @@ function RegistrarLotePage() {
 
             <div>
               <label
+                htmlFor="proveedor"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Proveedor
+              </label>
+              <select
+                id="proveedor"
+                className={estiloCampo}
+                value={formulario.proveedor}
+                disabled={cargandoProveedores}
+                onChange={(e) => actualizarCampo('proveedor', e.target.value)}
+              >
+                <option value="">Sin proveedor asociado</option>
+                {proveedores.map((proveedor) => (
+                  <option key={proveedor.id} value={proveedor.id}>
+                    {proveedor.nombre}
+                  </option>
+                ))}
+              </select>
+              {proveedores.length === 0 && !cargandoProveedores && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/inventario/proveedores')}
+                  className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-sky-800 hover:underline"
+                >
+                  <Truck size={16} /> Registrar proveedor
+                </button>
+              )}
+            </div>
+
+            <div>
+              <label
                 htmlFor="numero_lote"
                 className="mb-2 block text-sm font-semibold text-slate-700"
               >
@@ -343,7 +385,7 @@ function RegistrarLotePage() {
 
             <button
               type="submit"
-              disabled={guardando || cargandoMedicamentos}
+              disabled={guardando || cargandoMedicamentos || cargandoProveedores}
               className="flex items-center gap-2 rounded-xl bg-sky-600 px-6 py-3 font-semibold text-white hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Save size={18} />

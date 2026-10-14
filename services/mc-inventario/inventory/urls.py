@@ -7,6 +7,8 @@ from .views import (
     LoteViewSet,
     MedicamentoViewSet,
     MovimientoInventarioViewSet,
+    ProveedorViewSet,
+    RegistroAuditoriaViewSet,
 )
 
 router = DefaultRouter()
@@ -21,6 +23,18 @@ router.register(
     r'laboratorios',
     LaboratorioViewSet,
     basename='laboratorio',
+)
+
+router.register(
+    r'proveedores',
+    ProveedorViewSet,
+    basename='proveedor',
+)
+
+router.register(
+    r'auditoria',
+    RegistroAuditoriaViewSet,
+    basename='auditoria',
 )
 
 router.register(

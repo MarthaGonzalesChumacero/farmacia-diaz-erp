@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   AlertTriangle,
   Boxes,
+  FileBarChart2,
   LogOut,
   PackageSearch,
   Pill,
@@ -162,21 +163,29 @@ function DashboardPage() {
   // ======================================
 
   useEffect(() => {
+    if (!usuario || usuario.rol !== 'administrador') return
+
+    let montado = true
     const cargarUsuarios = async () => {
       try {
         const datosUsuarios = await getUsuarios()
-        setUsuarios(datosUsuarios)
-        setErrorUsuarios(false)
+        if (montado) {
+          setUsuarios(datosUsuarios)
+          setErrorUsuarios(false)
+        }
       } catch (error) {
         console.error('Error al cargar usuarios:', error)
-        setErrorUsuarios(true)
+        if (montado) setErrorUsuarios(true)
       } finally {
-        setCargandoUsuarios(false)
+        if (montado) setCargandoUsuarios(false)
       }
     }
 
     void cargarUsuarios()
-  }, [])
+    return () => {
+      montado = false
+    }
+  }, [usuario])
 
   // ======================================
   // Cerrar sesión
@@ -333,6 +342,7 @@ function DashboardPage() {
 
           {/* Usuarios */}
 
+          {usuario?.rol === 'administrador' && (
           <article className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
               <Users size={23} />
@@ -350,6 +360,7 @@ function DashboardPage() {
                   : usuarios.length}
             </p>
           </article>
+          )}
         </section>
 
         {/* Módulos del sistema */}
@@ -359,7 +370,7 @@ function DashboardPage() {
             Módulos del sistema
           </h3>
 
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className={`grid gap-5 md:grid-cols-3 ${usuario?.rol === 'administrador' ? 'lg:grid-cols-4' : ''}`}>
 
             {/* Inventario: tarjeta con navegación */}
 
@@ -388,10 +399,81 @@ function DashboardPage() {
                 Medicamentos, lotes, stock y movimientos.
               </p>
             </article>
+            {usuario?.rol === 'administrador' && (
+              <article
+                role="link"
+                tabIndex={0}
+                onClick={() => navigate('/inventario/reportes')}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    navigate('/inventario/reportes')
+                  }
+                }}
+                className="cursor-pointer rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-600"
+              >
+                <FileBarChart2 className="mb-4 text-sky-700" size={30} />
+                <h4 className="text-lg font-semibold text-slate-900">Reportes</h4>
+                <p className="mt-2 text-sm text-slate-500">
+                  Stock, vencimientos, movimientos y auditoría.
+                </p>
+              </article>
+            )}
+            <article
+              role="link"
+              tabIndex={0}
+              onClick={() => navigate('/alertas')}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  navigate('/alertas')
+                }
+              }}
+              className="cursor-pointer rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <AlertTriangle className="mb-4 text-amber-600" size={30} />
+              <h4 className="text-lg font-semibold text-slate-900">
+                Alertas de inventario
+              </h4>
+              <p className="mt-2 text-sm text-slate-500">
+                Stock crítico y lotes próximos a vencer.
+              </p>
+            </article>
+            {usuario?.rol === 'administrador' && (
+              <article
+                role="link"
+                tabIndex={0}
+                onClick={() => navigate('/usuarios')}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    navigate('/usuarios')
+                  }
+                }}
+                className="cursor-pointer rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+              >
+                <Users className="mb-4 text-violet-700" size={30} />
+                <h4 className="text-lg font-semibold text-slate-900">Usuarios</h4>
+                <p className="mt-2 text-sm text-slate-500">
+                  Administración de cuentas y roles.
+                </p>
+              </article>
+            )}
 
             {/* Ventas */}
 
-            <article className="rounded-2xl bg-white p-6 shadow-sm">
+            <article
+              role="link"
+              tabIndex={0}
+              onClick={() => navigate('/ventas')}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  navigate('/ventas')
+                }
+              }}
+              className="cursor-pointer rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
               <ShoppingCart
                 className="mb-4 text-emerald-600"
                 size={30}
@@ -408,7 +490,18 @@ function DashboardPage() {
 
             {/* Control de stock */}
 
-            <article className="rounded-2xl bg-white p-6 shadow-sm">
+            <article
+              role="link"
+              tabIndex={0}
+              onClick={() => navigate('/inventario/stock')}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  navigate('/inventario/stock')
+                }
+              }}
+              className="cursor-pointer rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
               <PackageSearch
                 className="mb-4 text-amber-600"
                 size={30}

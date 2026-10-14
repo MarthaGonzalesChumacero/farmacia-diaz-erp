@@ -24,6 +24,7 @@ class DetalleVentaSerializer(serializers.ModelSerializer):
 
 
 class VentaSerializer(serializers.ModelSerializer):
+    referencia = serializers.CharField(validators=[])
     detalles = DetalleVentaSerializer(
         many=True,
     )
@@ -51,10 +52,17 @@ class VentaSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         detalles_data = validated_data.pop('detalles')
+        request = self.context.get('request')
+        authorization = (
+            request.headers.get('Authorization')
+            if request is not None
+            else None
+        )
 
         venta = VentaService.crear_venta(
             validated_data,
             detalles_data,
+            authorization=authorization,
         )
 
         return venta
