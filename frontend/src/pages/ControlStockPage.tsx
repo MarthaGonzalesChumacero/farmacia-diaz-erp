@@ -227,45 +227,31 @@ function ControlStockPage() {
   )
 
   return (
-    <main className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
+    <main className="bg-app-bg">
+      <header className="border-b border-app-border bg-app-card">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
               aria-label="Volver al panel"
-              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+              className="rounded-lg p-2 text-app-muted hover:bg-app-bg"
             >
               <ArrowLeft size={21} />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">Control de stock</h1>
-              <p className="text-sm text-slate-500">Existencias y movimientos auditables</p>
+              <h1 className="text-xl font-bold text-app-text">Control de stock</h1>
+              <p className="text-sm text-app-muted">Existencias y movimientos auditables</p>
             </div>
           </div>
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/alertas')}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Alertas
-            </button>
-            {esAdministrador && <button
-              type="button"
-              onClick={() => navigate('/inventario/reportes')}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Reportes
-            </button>}
             <button
               type="button"
               onClick={() => void actualizarDatos()}
               disabled={actualizando}
               title="Actualizar existencias"
               aria-label="Actualizar existencias"
-              className="rounded-lg border border-slate-300 bg-white p-2.5 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              className="rounded-lg border border-app-border bg-app-card p-2.5 text-app-text hover:bg-app-bg disabled:opacity-50"
             >
               <RefreshCw size={18} />
             </button>
@@ -275,8 +261,8 @@ function ControlStockPage() {
 
       <section className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">Existencias</h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <h2 className="text-2xl font-bold text-app-text">Existencias</h2>
+          <p className="mt-1 text-sm text-app-muted">
             El stock disponible excluye lotes vencidos. Todo cambio queda en el kardex.
           </p>
         </div>
@@ -285,9 +271,9 @@ function ControlStockPage() {
         {mensaje && <p role="status" className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{mensaje}</p>}
 
         <div className="mb-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <article className="rounded-xl border border-slate-200 bg-white p-5">
-            <p className="text-sm text-slate-500">Medicamentos activos</p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">{cargando ? '...' : activos.length}</p>
+          <article className="rounded-xl border border-app-border bg-app-card p-5">
+            <p className="text-sm text-app-muted">Medicamentos activos</p>
+            <p className="mt-2 text-3xl font-bold text-app-text">{cargando ? '...' : activos.length}</p>
           </article>
           <article className="rounded-xl border border-amber-200 bg-amber-50 p-5">
             <p className="text-sm text-amber-800">Stock crítico</p>
@@ -304,24 +290,24 @@ function ControlStockPage() {
           </article>
         </div>
 
-        <section className="mb-8 overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-            <h3 className="font-semibold text-slate-900">Existencias por medicamento</h3>
+        <section className="mb-8 overflow-hidden rounded-xl border border-app-border bg-app-card">
+          <div className="flex items-center justify-between border-b border-app-border px-5 py-4">
+            <h3 className="font-semibold text-app-text">Existencias por medicamento</h3>
             {esAdministrador && <button
               type="button"
               onClick={() => navigate('/inventario/lotes/registrar')}
-              className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#003F63] px-3 py-2 text-sm font-medium text-white hover:bg-[#00507d]"
             >
               <PackagePlus size={17} />
               Nuevo lote
             </button>}
           </div>
           {cargando ? (
-            <p className="p-8 text-center text-slate-500">Cargando existencias...</p>
+            <p className="p-8 text-center text-app-muted">Cargando existencias...</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[780px] text-left text-sm">
-                <thead className="bg-slate-50 text-slate-600">
+                <thead className="bg-app-bg text-app-muted">
                   <tr>
                     <th className="px-5 py-3">Medicamento</th>
                     <th className="px-5 py-3">Stock utilizable</th>
@@ -330,7 +316,7 @@ function ControlStockPage() {
                     <th className="px-5 py-3 text-right">Acción</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-app-border">
                   {activos.map((medicamento) => {
                     const stock = stockDisponible(medicamento.id)
                     const estado = stock === 0
@@ -340,7 +326,7 @@ function ControlStockPage() {
                         : 'Normal'
                     return (
                       <tr key={medicamento.id}>
-                        <td className="px-5 py-3 font-medium text-slate-900">{medicamento.nombre}</td>
+                        <td className="px-5 py-3 font-medium text-app-text">{medicamento.nombre}</td>
                         <td className="px-5 py-3 tabular-nums">{stock}</td>
                         <td className="px-5 py-3 tabular-nums">{medicamento.stock_minimo}</td>
                         <td className="px-5 py-3">
@@ -356,7 +342,7 @@ function ControlStockPage() {
                           {esAdministrador && <button
                             type="button"
                             onClick={() => abrirMovimiento(medicamento)}
-                            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            className="rounded-lg border border-app-border px-3 py-2 text-sm font-medium text-app-text hover:bg-app-bg"
                           >
                             Registrar movimiento
                           </button>}
@@ -371,23 +357,23 @@ function ControlStockPage() {
         </section>
 
         <div className="grid gap-8 xl:grid-cols-2">
-          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-5 py-4">
-              <h3 className="font-semibold text-slate-900">Próximos a vencer</h3>
-              <p className="mt-1 text-xs text-slate-500">Lotes con existencia y vencimiento dentro de 30 días.</p>
+          <section className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+            <div className="border-b border-app-border px-5 py-4">
+              <h3 className="font-semibold text-app-text">Próximos a vencer</h3>
+              <p className="mt-1 text-xs text-app-muted">Lotes con existencia y vencimiento dentro de 30 días.</p>
             </div>
             {vencimientos.length === 0 ? (
-              <p className="p-6 text-sm text-slate-500">No hay lotes próximos a vencer.</p>
+              <p className="p-6 text-sm text-app-muted">No hay lotes próximos a vencer.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[480px] text-left text-sm">
-                  <thead className="bg-slate-50 text-slate-600">
+                  <thead className="bg-app-bg text-app-muted">
                     <tr><th className="px-5 py-3">Medicamento / lote</th><th className="px-5 py-3">Vence</th><th className="px-5 py-3">Días</th><th className="px-5 py-3">Stock</th></tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-app-border">
                     {vencimientos.map((lote) => (
                       <tr key={`${lote.medicamento_id}-${lote.numero_lote}`}>
-                        <td className="px-5 py-3"><p className="font-medium text-slate-900">{lote.medicamento}</p><p className="text-xs text-slate-500">{lote.numero_lote}</p></td>
+                        <td className="px-5 py-3"><p className="font-medium text-app-text">{lote.medicamento}</p><p className="text-xs text-app-muted">{lote.numero_lote}</p></td>
                         <td className="px-5 py-3">{lote.fecha_vencimiento}</td>
                         <td className="px-5 py-3">{lote.dias_restantes}</td>
                         <td className="px-5 py-3">{lote.stock_actual}</td>
@@ -399,23 +385,23 @@ function ControlStockPage() {
             )}
           </section>
 
-          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-5 py-4">
-              <h3 className="font-semibold text-slate-900">Kardex reciente</h3>
+          <section className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+            <div className="border-b border-app-border px-5 py-4">
+              <h3 className="font-semibold text-app-text">Kardex reciente</h3>
             </div>
             {movimientos.length === 0 ? (
-              <p className="p-6 text-sm text-slate-500">Todavía no hay movimientos registrados.</p>
+              <p className="p-6 text-sm text-app-muted">Todavía no hay movimientos registrados.</p>
             ) : (
               <div className="max-h-[420px] overflow-auto">
                 <table className="w-full min-w-[520px] text-left text-sm">
-                  <thead className="sticky top-0 bg-slate-50 text-slate-600">
+                  <thead className="sticky top-0 bg-app-bg text-app-muted">
                     <tr><th className="px-5 py-3">Fecha</th><th className="px-5 py-3">Movimiento</th><th className="px-5 py-3">Cantidad</th><th className="px-5 py-3">Saldo</th></tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-app-border">
                     {movimientos.slice(0, 50).map((movimiento) => (
                       <tr key={movimiento.id}>
-                        <td className="px-5 py-3 text-xs text-slate-500">{new Date(movimiento.fecha_movimiento).toLocaleString('es-BO')}</td>
-                        <td className="px-5 py-3"><p className="font-medium text-slate-800">{movimiento.medicamento}</p><p className="text-xs text-slate-500">{movimiento.tipo_descripcion} · {movimiento.numero_lote}</p><p className="text-xs text-slate-500">{movimiento.motivo}</p></td>
+                        <td className="px-5 py-3 text-xs text-app-muted">{new Date(movimiento.fecha_movimiento).toLocaleString('es-BO')}</td>
+                        <td className="px-5 py-3"><p className="font-medium text-app-text">{movimiento.medicamento}</p><p className="text-xs text-app-muted">{movimiento.tipo_descripcion} · {movimiento.numero_lote}</p><p className="text-xs text-app-muted">{movimiento.motivo}</p></td>
                         <td className="px-5 py-3">{movimiento.cantidad}</td>
                         <td className="px-5 py-3">{movimiento.stock_resultante}</td>
                       </tr>
@@ -434,24 +420,24 @@ function ControlStockPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="movimiento-titulo"
-            className="w-full max-w-xl rounded-xl bg-white p-6 shadow-xl"
+            className="w-full max-w-xl rounded-xl bg-app-card p-6 shadow-xl"
           >
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <h2 id="movimiento-titulo" className="text-xl font-bold text-slate-900">Registrar movimiento</h2>
-                <p className="mt-1 text-sm text-slate-500">{medicamentoSeleccionado.nombre}</p>
+                <h2 id="movimiento-titulo" className="text-xl font-bold text-app-text">Registrar movimiento</h2>
+                <p className="mt-1 text-sm text-app-muted">{medicamentoSeleccionado.nombre}</p>
               </div>
-              <button type="button" onClick={() => setMedicamentoMovimiento(null)} aria-label="Cerrar" className="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100">Cerrar</button>
+              <button type="button" onClick={() => setMedicamentoMovimiento(null)} aria-label="Cerrar" className="rounded-lg px-3 py-2 text-app-muted hover:bg-app-bg">Cerrar</button>
             </div>
 
             <form onSubmit={(evento) => void guardarMovimiento(evento)} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-app-text">
                   Tipo de movimiento
                   <select
                     value={formulario.tipo}
                     onChange={(evento) => setFormulario((actual) => ({ ...actual, tipo: evento.target.value as TipoMovimiento, lote: '' }))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5"
+                    className="mt-1.5 w-full rounded-lg border border-app-border bg-app-card px-3 py-2.5"
                   >
                     <option value="entrada">Entrada</option>
                     <option value="salida">Salida</option>
@@ -460,13 +446,13 @@ function ControlStockPage() {
                     <option value="vencimiento">Baja por vencimiento</option>
                   </select>
                 </label>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-app-text">
                   Lote
                   <select
                     required
                     value={formulario.lote}
                     onChange={(evento) => setFormulario((actual) => ({ ...actual, lote: evento.target.value }))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5"
+                    className="mt-1.5 w-full rounded-lg border border-app-border bg-app-card px-3 py-2.5"
                   >
                     <option value="">Seleccionar lote</option>
                     {lotesParaMovimiento.map((lote) => (
@@ -476,7 +462,7 @@ function ControlStockPage() {
                     ))}
                   </select>
                 </label>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-app-text">
                   Cantidad
                   <input
                     type="number"
@@ -485,19 +471,19 @@ function ControlStockPage() {
                     required
                     value={formulario.cantidad}
                     onChange={(evento) => setFormulario((actual) => ({ ...actual, cantidad: evento.target.value }))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5"
+                    className="mt-1.5 w-full rounded-lg border border-app-border px-3 py-2.5"
                   />
                 </label>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-app-text">
                   Referencia
                   <input
                     value={formulario.referencia}
                     onChange={(evento) => setFormulario((actual) => ({ ...actual, referencia: evento.target.value }))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5"
+                    className="mt-1.5 w-full rounded-lg border border-app-border px-3 py-2.5"
                   />
                 </label>
               </div>
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-app-text">
                 Motivo
                 <textarea
                   required
@@ -506,7 +492,7 @@ function ControlStockPage() {
                   value={formulario.motivo}
                   onChange={(evento) => setFormulario((actual) => ({ ...actual, motivo: evento.target.value }))}
                   placeholder="Describe la razón de la entrada, salida o ajuste"
-                  className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5"
+                  className="mt-1.5 w-full rounded-lg border border-app-border px-3 py-2.5"
                 />
               </label>
               {lotesParaMovimiento.length === 0 && (
@@ -515,9 +501,9 @@ function ControlStockPage() {
                 </p>
               )}
               {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-              <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
-                <button type="button" onClick={() => setMedicamentoMovimiento(null)} className="rounded-lg border border-slate-300 px-4 py-2.5 font-medium text-slate-700 hover:bg-slate-50">Cancelar</button>
-                <button type="submit" disabled={guardando || lotesParaMovimiento.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 font-semibold text-white hover:bg-slate-700 disabled:opacity-50">
+              <div className="flex justify-end gap-3 border-t border-app-border pt-4">
+                <button type="button" onClick={() => setMedicamentoMovimiento(null)} className="rounded-lg border border-app-border px-4 py-2.5 font-medium text-app-text hover:bg-app-bg">Cancelar</button>
+                <button type="submit" disabled={guardando || lotesParaMovimiento.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-[#003F63] px-4 py-2.5 font-semibold text-white hover:bg-[#00507d] disabled:opacity-50">
                   {formulario.tipo === 'entrada' || formulario.tipo === 'ajuste_entrada'
                     ? <ArrowDownToLine size={17} />
                     : formulario.tipo === 'salida' || formulario.tipo === 'vencimiento'

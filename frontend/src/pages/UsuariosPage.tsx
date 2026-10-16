@@ -189,21 +189,21 @@ function UsuariosPage() {
   })
 
   return (
-    <main className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
+    <main className="bg-app-bg">
+      <header className="border-b border-app-border bg-app-card">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
               aria-label="Volver al panel"
-              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+              className="rounded-lg p-2 text-app-muted hover:bg-app-bg"
             >
               <ArrowLeft size={21} />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">Administración de usuarios</h1>
-              <p className="text-sm text-slate-500">Cuentas, roles y acceso al ERP</p>
+              <h1 className="text-xl font-bold text-app-text">Administración de usuarios</h1>
+              <p className="text-sm text-app-muted">Cuentas, roles y acceso al ERP</p>
             </div>
           </div>
           <button
@@ -220,8 +220,8 @@ function UsuariosPage() {
       <section className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Usuarios registrados</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <h2 className="text-2xl font-bold text-app-text">Usuarios registrados</h2>
+            <p className="mt-1 text-sm text-app-muted">
               {usuarios.length} cuentas · Administradores y auxiliares
             </p>
           </div>
@@ -230,7 +230,7 @@ function UsuariosPage() {
             onClick={() => void cargarUsuarios()}
             title="Actualizar usuarios"
             aria-label="Actualizar usuarios"
-            className="rounded-lg border border-slate-300 bg-white p-2.5 text-slate-700 hover:bg-slate-50"
+            className="rounded-lg border border-app-border bg-app-card p-2.5 text-app-text hover:bg-app-bg"
           >
             <RefreshCw size={18} />
           </button>
@@ -239,16 +239,16 @@ function UsuariosPage() {
         {error && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}
         {mensaje && <p role="status" className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{mensaje}</p>}
 
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 p-4">
+        <section className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-app-border p-4">
             <label className="relative min-w-64 flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-app-muted" size={18} />
               <input
                 type="search"
                 value={busqueda}
                 onChange={(evento) => setBusqueda(evento.target.value)}
                 placeholder="Buscar usuario, nombre o correo"
-                className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-3 text-sm"
+                className="w-full rounded-lg border border-app-border py-2.5 pl-10 pr-3 text-sm"
               />
             </label>
             <div className="flex gap-1" aria-label="Filtrar por estado">
@@ -258,7 +258,7 @@ function UsuariosPage() {
                   type="button"
                   aria-pressed={filtro === opcion}
                   onClick={() => setFiltro(opcion)}
-                  className={`rounded-lg px-3 py-2 text-sm font-medium capitalize ${filtro === opcion ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                  className={`rounded-lg px-3 py-2 text-sm font-medium capitalize ${filtro === opcion ? 'bg-[#003F63] text-white' : 'text-app-muted hover:bg-app-bg'}`}
                 >
                   {opcion}
                 </button>
@@ -267,13 +267,13 @@ function UsuariosPage() {
           </div>
 
           {cargando ? (
-            <p className="p-8 text-center text-slate-500">Cargando usuarios...</p>
+            <p className="p-8 text-center text-app-muted">Cargando usuarios...</p>
           ) : usuariosFiltrados.length === 0 ? (
-            <p className="p-8 text-center text-slate-500">No se encontraron usuarios.</p>
+            <p className="p-8 text-center text-app-muted">No se encontraron usuarios.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[850px] text-left text-sm">
-                <thead className="bg-slate-50 text-slate-600">
+                <thead className="bg-app-bg text-app-muted">
                   <tr>
                     <th className="px-5 py-3 font-semibold">Usuario</th>
                     <th className="px-5 py-3 font-semibold">Nombre / correo</th>
@@ -282,19 +282,19 @@ function UsuariosPage() {
                     <th className="px-5 py-3 text-right font-semibold">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-app-border">
                   {usuariosFiltrados.map((usuario) => (
                     <tr key={usuario.id}>
-                      <td className="px-5 py-4 font-semibold text-slate-900">{usuario.username}</td>
+                      <td className="px-5 py-4 font-semibold text-app-text">{usuario.username}</td>
                       <td className="px-5 py-4">
-                        <p className="text-slate-800">{`${usuario.first_name} ${usuario.last_name}`.trim() || 'Sin nombre'}</p>
-                        <p className="mt-0.5 text-xs text-slate-500">{usuario.email || 'Sin correo'}</p>
+                        <p className="text-app-text">{`${usuario.first_name} ${usuario.last_name}`.trim() || 'Sin nombre'}</p>
+                        <p className="mt-0.5 text-xs text-app-muted">{usuario.email || 'Sin correo'}</p>
                       </td>
                       <td className="px-5 py-4">
                         {usuario.rol === 'administrador' ? 'Administrador' : 'Auxiliar'}
                       </td>
                       <td className="px-5 py-4">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${usuario.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${usuario.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-app-border text-app-text'}`}>
                           {usuario.activo ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
@@ -303,7 +303,7 @@ function UsuariosPage() {
                           <button
                             type="button"
                             onClick={() => abrirEdicion(usuario)}
-                            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            className="rounded-lg border border-app-border px-3 py-2 text-sm font-medium text-app-text hover:bg-app-bg"
                           >
                             Editar
                           </button>
@@ -314,7 +314,7 @@ function UsuariosPage() {
                               usuarioActualizando === usuario.id ||
                               usuarioActual?.id === usuario.id
                             }
-                            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+                            className="rounded-lg border border-app-border px-3 py-2 text-sm font-medium text-app-text hover:bg-app-bg disabled:cursor-not-allowed disabled:opacity-45"
                           >
                             {usuario.activo ? 'Desactivar' : 'Activar'}
                           </button>
@@ -335,17 +335,17 @@ function UsuariosPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="usuario-dialog-title"
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-app-card p-6 shadow-xl"
           >
             <div className="mb-5 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 text-violet-800">
                 <UserRoundCog size={21} />
               </div>
               <div>
-                <h2 id="usuario-dialog-title" className="text-xl font-bold text-slate-900">
+                <h2 id="usuario-dialog-title" className="text-xl font-bold text-app-text">
                   {usuarioEditando ? 'Editar usuario' : 'Registrar usuario'}
                 </h2>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-app-muted">
                   {usuarioEditando ? 'La contraseña existente no se modifica.' : 'Define la contraseña inicial y el rol.'}
                 </p>
               </div>
@@ -353,7 +353,7 @@ function UsuariosPage() {
 
             <form onSubmit={(evento) => void guardarUsuario(evento)} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-app-text">
                   Nombre de usuario
                   <input
                     required
@@ -361,11 +361,11 @@ function UsuariosPage() {
                     maxLength={150}
                     value={formulario.username}
                     onChange={(evento) => setFormulario((actual) => ({ ...actual, username: evento.target.value }))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5"
+                    className="mt-1.5 w-full rounded-lg border border-app-border px-3 py-2.5"
                   />
                 </label>
                 {!usuarioEditando && (
-                  <label className="text-sm font-medium text-slate-700">
+                  <label className="text-sm font-medium text-app-text">
                     Contraseña inicial
                     <input
                       required
@@ -374,50 +374,50 @@ function UsuariosPage() {
                       autoComplete="new-password"
                       value={formulario.password}
                       onChange={(evento) => setFormulario((actual) => ({ ...actual, password: evento.target.value }))}
-                      className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5"
+                      className="mt-1.5 w-full rounded-lg border border-app-border px-3 py-2.5"
                     />
                   </label>
                 )}
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-app-text">
                   Nombre
                   <input
                     value={formulario.first_name}
                     onChange={(evento) => setFormulario((actual) => ({ ...actual, first_name: evento.target.value }))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5"
+                    className="mt-1.5 w-full rounded-lg border border-app-border px-3 py-2.5"
                   />
                 </label>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-app-text">
                   Apellido
                   <input
                     value={formulario.last_name}
                     onChange={(evento) => setFormulario((actual) => ({ ...actual, last_name: evento.target.value }))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5"
+                    className="mt-1.5 w-full rounded-lg border border-app-border px-3 py-2.5"
                   />
                 </label>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-app-text">
                   Correo
                   <input
                     type="email"
                     value={formulario.email}
                     onChange={(evento) => setFormulario((actual) => ({ ...actual, email: evento.target.value }))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5"
+                    className="mt-1.5 w-full rounded-lg border border-app-border px-3 py-2.5"
                   />
                 </label>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-app-text">
                   Teléfono
                   <input
                     value={formulario.telefono}
                     onChange={(evento) => setFormulario((actual) => ({ ...actual, telefono: evento.target.value }))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5"
+                    className="mt-1.5 w-full rounded-lg border border-app-border px-3 py-2.5"
                   />
                 </label>
-                <label className="text-sm font-medium text-slate-700 sm:col-span-2">
+                <label className="text-sm font-medium text-app-text sm:col-span-2">
                   Rol
                   <select
                     value={formulario.rol}
                     disabled={usuarioEditando?.id === usuarioActual?.id}
                     onChange={(evento) => setFormulario((actual) => ({ ...actual, rol: evento.target.value as UsuarioActual['rol'] }))}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 disabled:bg-slate-100"
+                    className="mt-1.5 w-full rounded-lg border border-app-border bg-app-card px-3 py-2.5 disabled:bg-app-bg"
                   >
                     <option value="administrador">Administrador</option>
                     <option value="auxiliar">Auxiliar</option>
@@ -427,11 +427,11 @@ function UsuariosPage() {
 
               {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}
 
-              <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
+              <div className="flex justify-end gap-3 border-t border-app-border pt-4">
                 <button
                   type="button"
                   onClick={() => setModalAbierto(false)}
-                  className="rounded-lg border border-slate-300 px-4 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-app-border px-4 py-2.5 font-medium text-app-text hover:bg-app-bg"
                 >
                   Cancelar
                 </button>

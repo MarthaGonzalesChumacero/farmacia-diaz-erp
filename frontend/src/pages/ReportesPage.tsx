@@ -176,46 +176,46 @@ function ReportesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
+    <main className="bg-app-bg">
+      <header className="border-b border-app-border bg-app-card">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => navigate('/dashboard')} aria-label="Volver al panel" className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"><ArrowLeft size={21} /></button>
-            <div><h1 className="text-xl font-bold text-slate-900">Reportes</h1><p className="text-sm text-slate-500">Inventario y trazabilidad</p></div>
+            <button type="button" onClick={() => navigate('/dashboard')} aria-label="Volver al panel" className="rounded-lg p-2 text-app-muted hover:bg-app-bg"><ArrowLeft size={21} /></button>
+            <div><h1 className="text-xl font-bold text-app-text">Reportes</h1><p className="text-sm text-app-muted">Inventario y trazabilidad</p></div>
           </div>
           <div className="flex gap-2">
-            <button type="button" onClick={() => void actualizarTodo()} disabled={actualizando} title="Actualizar reportes" aria-label="Actualizar reportes" className="rounded-lg border border-slate-300 bg-white p-2.5 text-slate-700 hover:bg-slate-50 disabled:opacity-50"><RefreshCw size={18} /></button>
-            <button type="button" onClick={() => descargarCSV(`farmacia-diaz-${vista}.csv`, datosCSV)} disabled={datosCSV.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"><Download size={17} />CSV</button>
+            <button type="button" onClick={() => void actualizarTodo()} disabled={actualizando} title="Actualizar reportes" aria-label="Actualizar reportes" className="rounded-lg border border-app-border bg-app-card p-2.5 text-app-text hover:bg-app-bg disabled:opacity-50"><RefreshCw size={18} /></button>
+            <button type="button" onClick={() => descargarCSV(`farmacia-diaz-${vista}.csv`, datosCSV)} disabled={datosCSV.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-[#003F63] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#00507d] disabled:opacity-50"><Download size={17} />CSV</button>
           </div>
         </div>
       </header>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
         {error && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}
-        <div className="mb-5 flex flex-wrap gap-1 border-b border-slate-200">
+        <div className="mb-5 flex flex-wrap gap-1 border-b border-app-border">
           {(['stock', 'vencimientos', 'kardex', ...(esAdministrador ? ['auditoria' as const] : [])] as const).map((opcion) => (
-            <button key={opcion} type="button" aria-pressed={vista === opcion} onClick={() => setVista(opcion)} className={`border-b-2 px-4 py-3 text-sm font-semibold ${vista === opcion ? 'border-blue-700 text-blue-800' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
+            <button key={opcion} type="button" aria-pressed={vista === opcion} onClick={() => setVista(opcion)} className={`border-b-2 px-4 py-3 text-sm font-semibold ${vista === opcion ? 'border-[#003F63] text-blue-800' : 'border-transparent text-app-muted hover:text-app-text'}`}>
               {titulos[opcion]}
             </button>
           ))}
         </div>
 
-        {vista === 'vencimientos' && <label className="mb-4 inline-flex items-center gap-3 text-sm font-medium text-slate-700">Ventana de vencimiento<input type="number" min="0" max="3650" value={dias} onChange={(evento) => setDias(evento.target.value)} className="w-24 rounded-lg border border-slate-300 px-3 py-2" />días</label>}
+        {vista === 'vencimientos' && <label className="mb-4 inline-flex items-center gap-3 text-sm font-medium text-app-text">Ventana de vencimiento<input type="number" min="0" max="3650" value={dias} onChange={(evento) => setDias(evento.target.value)} className="w-24 rounded-lg border border-app-border px-3 py-2" />días</label>}
         {vista === 'kardex' && (
           <form onSubmit={(evento) => void aplicarFiltrosKardex(evento)} className="mb-4 flex flex-wrap items-end gap-3">
-            <label className="text-sm font-medium text-slate-700">Tipo<select value={filtrosKardex.tipo ?? ''} onChange={(evento) => setFiltrosKardex((actual) => ({ ...actual, tipo: (evento.target.value || undefined) as FiltroKardex['tipo'] }))} className="mt-1 block rounded-lg border border-slate-300 bg-white px-3 py-2"><option value="">Todos</option><option value="entrada">Entrada</option><option value="salida">Salida</option><option value="ajuste_entrada">Ajuste entrada</option><option value="ajuste_salida">Ajuste salida</option><option value="vencimiento">Vencimiento</option><option value="devolucion">Devolución</option></select></label>
-            <label className="text-sm font-medium text-slate-700">Desde<input type="date" value={filtrosKardex.desde ?? ''} onChange={(evento) => setFiltrosKardex((actual) => ({ ...actual, desde: evento.target.value || undefined }))} className="mt-1 block rounded-lg border border-slate-300 px-3 py-2" /></label>
-            <label className="text-sm font-medium text-slate-700">Hasta<input type="date" value={filtrosKardex.hasta ?? ''} onChange={(evento) => setFiltrosKardex((actual) => ({ ...actual, hasta: evento.target.value || undefined }))} className="mt-1 block rounded-lg border border-slate-300 px-3 py-2" /></label>
-            <button type="submit" disabled={actualizando} className="rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Aplicar</button>
+            <label className="text-sm font-medium text-app-text">Tipo<select value={filtrosKardex.tipo ?? ''} onChange={(evento) => setFiltrosKardex((actual) => ({ ...actual, tipo: (evento.target.value || undefined) as FiltroKardex['tipo'] }))} className="mt-1 block rounded-lg border border-app-border bg-app-card px-3 py-2"><option value="">Todos</option><option value="entrada">Entrada</option><option value="salida">Salida</option><option value="ajuste_entrada">Ajuste entrada</option><option value="ajuste_salida">Ajuste salida</option><option value="vencimiento">Vencimiento</option><option value="devolucion">Devolución</option></select></label>
+            <label className="text-sm font-medium text-app-text">Desde<input type="date" value={filtrosKardex.desde ?? ''} onChange={(evento) => setFiltrosKardex((actual) => ({ ...actual, desde: evento.target.value || undefined }))} className="mt-1 block rounded-lg border border-app-border px-3 py-2" /></label>
+            <label className="text-sm font-medium text-app-text">Hasta<input type="date" value={filtrosKardex.hasta ?? ''} onChange={(evento) => setFiltrosKardex((actual) => ({ ...actual, hasta: evento.target.value || undefined }))} className="mt-1 block rounded-lg border border-app-border px-3 py-2" /></label>
+            <button type="submit" disabled={actualizando} className="rounded-lg bg-[#00507d] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Aplicar</button>
           </form>
         )}
 
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <div className="border-b border-slate-200 px-5 py-4"><h2 className="font-semibold text-slate-900">{titulos[vista]}</h2><p className="mt-1 text-xs text-slate-500">{datosCSV.length} registros</p></div>
-          {cargando ? <p className="p-8 text-center text-slate-500">Cargando reportes...</p> : datosCSV.length === 0 ? <p className="p-8 text-center text-slate-500">No hay resultados para esta vista.</p> : (
+        <section className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+          <div className="border-b border-app-border px-5 py-4"><h2 className="font-semibold text-app-text">{titulos[vista]}</h2><p className="mt-1 text-xs text-app-muted">{datosCSV.length} registros</p></div>
+          {cargando ? <p className="p-8 text-center text-app-muted">Cargando reportes...</p> : datosCSV.length === 0 ? <p className="p-8 text-center text-app-muted">No hay resultados para esta vista.</p> : (
             <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="bg-slate-50 text-slate-600"><tr>{Object.keys(datosCSV[0]).map((columna) => <th key={columna} className="px-4 py-3 font-semibold capitalize">{columna.replaceAll('_', ' ')}</th>)}</tr></thead>
-              <tbody className="divide-y divide-slate-100">{datosCSV.map((fila, indice) => <tr key={indice}>{Object.values(fila).map((valor, columna) => <td key={columna} className="max-w-[360px] whitespace-normal px-4 py-3 text-slate-700">{String(valor ?? '—')}</td>)}</tr>)}</tbody>
+              <thead className="bg-app-bg text-app-muted"><tr>{Object.keys(datosCSV[0]).map((columna) => <th key={columna} className="px-4 py-3 font-semibold capitalize">{columna.replaceAll('_', ' ')}</th>)}</tr></thead>
+              <tbody className="divide-y divide-app-border">{datosCSV.map((fila, indice) => <tr key={indice}>{Object.values(fila).map((valor, columna) => <td key={columna} className="max-w-[360px] whitespace-normal px-4 py-3 text-app-text">{String(valor ?? '—')}</td>)}</tr>)}</tbody>
             </table></div>
           )}
         </section>

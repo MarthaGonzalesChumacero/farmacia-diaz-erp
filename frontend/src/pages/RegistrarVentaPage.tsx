@@ -188,27 +188,27 @@ function RegistrarVentaPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
+    <main className="bg-app-bg">
+      <header className="border-b border-app-border bg-app-card">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate('/ventas')}
               aria-label="Volver al historial"
-              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+              className="rounded-lg p-2 text-app-muted hover:bg-app-bg"
             >
               <ArrowLeft size={21} />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">Farmacia Díaz</h1>
-              <p className="text-sm text-slate-500">Registro de ventas</p>
+              <h1 className="text-xl font-bold text-app-text">Farmacia Díaz</h1>
+              <p className="text-sm text-app-muted">Registro de ventas</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => navigate('/ventas')}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900"
+            className="text-sm font-medium text-app-muted hover:text-app-text"
           >
             Historial
           </button>
@@ -219,21 +219,21 @@ function RegistrarVentaPage() {
         <div className="mb-6 flex items-center gap-3">
           <ShoppingCart className="text-emerald-700" size={27} />
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Nueva venta</h2>
-            <p className="text-sm text-slate-500">Referencia: {referencia}</p>
+            <h2 className="text-2xl font-bold text-app-text">Nueva venta</h2>
+            <p className="text-sm text-app-muted">Referencia: {referencia}</p>
           </div>
         </div>
 
         <form onSubmit={(evento) => void registrar(evento)}>
           <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-            <section className="rounded-xl border border-slate-200 bg-white p-5">
-              <h3 className="mb-4 font-semibold text-slate-900">Productos</h3>
+            <section className="rounded-xl border border-app-border bg-app-card p-5">
+              <h3 className="mb-4 font-semibold text-app-text">Productos</h3>
               <div className="grid gap-3 sm:grid-cols-[1fr_130px_auto]">
                 <select
                   value={medicamentoId}
                   onChange={(evento) => setMedicamentoId(evento.target.value)}
                   disabled={cargando}
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-2.5"
+                  className="rounded-lg border border-app-border bg-app-card px-3 py-2.5"
                 >
                   <option value="">Seleccionar medicamento</option>
                   {medicamentos.map((medicamento) => {
@@ -256,7 +256,7 @@ function RegistrarVentaPage() {
                   value={cantidad}
                   onChange={(evento) => setCantidad(evento.target.value)}
                   aria-label="Cantidad"
-                  className="rounded-lg border border-slate-300 px-3 py-2.5"
+                  className="rounded-lg border border-app-border px-3 py-2.5"
                 />
                 <button
                   type="button"
@@ -271,12 +271,12 @@ function RegistrarVentaPage() {
 
               <div className="mt-6 overflow-x-auto">
                 {carrito.length === 0 ? (
-                  <p className="py-8 text-center text-sm text-slate-500">
+                  <p className="py-8 text-center text-sm text-app-muted">
                     {cargando ? 'Cargando productos...' : 'Agrega productos para iniciar la venta.'}
                   </p>
                 ) : (
                   <table className="w-full min-w-[520px] text-left text-sm">
-                    <thead className="border-b border-slate-200 text-slate-500">
+                    <thead className="border-b border-app-border text-app-muted">
                       <tr>
                         <th className="py-3 pr-3">Medicamento</th>
                         <th className="py-3 pr-3">Cantidad</th>
@@ -285,10 +285,10 @@ function RegistrarVentaPage() {
                         <th className="py-3"><span className="sr-only">Quitar</span></th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-app-border">
                       {carrito.map((item) => (
                         <tr key={item.medicamento_id}>
-                          <td className="py-3 pr-3 font-medium text-slate-800">{item.medicamento_nombre}</td>
+                          <td className="py-3 pr-3 font-medium text-app-text">{item.medicamento_nombre}</td>
                           <td className="py-3 pr-3">{item.cantidad}</td>
                           <td className="py-3 pr-3">Bs {item.precio_unitario}</td>
                           <td className="py-3 pr-3">Bs {(item.cantidad * Number(item.precio_unitario)).toFixed(2)}</td>
@@ -302,7 +302,7 @@ function RegistrarVentaPage() {
                                   actual.filter((linea) => linea.medicamento_id !== item.medicamento_id),
                                 )
                               }
-                              className="rounded p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
+                              className="rounded p-2 text-app-muted hover:bg-red-50 hover:text-red-700"
                             >
                               <Trash2 size={17} />
                             </button>
@@ -315,9 +315,9 @@ function RegistrarVentaPage() {
               </div>
             </section>
 
-            <section className="h-fit rounded-xl border border-slate-200 bg-white p-5">
-              <h3 className="mb-4 font-semibold text-slate-900">Resumen</h3>
-              <label htmlFor="observacion" className="mb-2 block text-sm font-medium text-slate-700">
+            <section className="h-fit rounded-xl border border-app-border bg-app-card p-5">
+              <h3 className="mb-4 font-semibold text-app-text">Resumen</h3>
+              <label htmlFor="observacion" className="mb-2 block text-sm font-medium text-app-text">
                 Observación
               </label>
               <textarea
@@ -325,15 +325,15 @@ function RegistrarVentaPage() {
                 rows={3}
                 value={observacion}
                 onChange={(evento) => setObservacion(evento.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5"
+                className="w-full rounded-lg border border-app-border px-3 py-2.5"
               />
 
               {error && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
               {exito && <p role="status" className="mt-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{exito}</p>}
 
-              <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-4">
-                <span className="font-semibold text-slate-700">Total</span>
-                <span className="text-xl font-bold text-slate-900">Bs {total.toFixed(2)}</span>
+              <div className="mt-6 flex items-center justify-between border-t border-app-border pt-4">
+                <span className="font-semibold text-app-text">Total</span>
+                <span className="text-xl font-bold text-app-text">Bs {total.toFixed(2)}</span>
               </div>
               <button
                 type="submit"

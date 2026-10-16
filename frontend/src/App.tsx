@@ -84,7 +84,7 @@ function App() {
         path="/inventario/identificar"
         element={
           <ProtectedRoute>
-            <Suspense fallback={<main className="p-8 text-center text-slate-500">Cargando lector...</main>}>
+            <Suspense fallback={<main className="p-8 text-center text-app-muted">Cargando lector...</main>}>
               <IdentificarCodigoPage />
             </Suspense>
           </ProtectedRoute>

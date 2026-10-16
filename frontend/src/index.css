@@ -1,5 +1,55 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--color-brand: #003f63;
+	--color-brand-green: #83c441;
+	--color-app-bg: #f4f7fa;
+	--color-app-card: #ffffff;
+	--color-app-border: #e2e8f0;
+	--color-app-text: #102a43;
+	--color-app-muted: #5b7083;
+	--color-app-sidebar: #ffffff;
+	--color-nav: #1d4a68;
+	--color-nav-hover: #eef3f7;
+}
+
+.dark {
+	--color-brand: #83c441;
+	--color-app-bg: #071826;
+	--color-app-card: #10283b;
+	--color-app-border: #1d3c54;
+	--color-app-text: #f8fafc;
+	--color-app-muted: #afc4d5;
+	--color-app-sidebar: #092237;
+	--color-nav: #afc4d5;
+	--color-nav-hover: #12324b;
+}
+
+body {
+	background-color: var(--color-app-bg);
+	color: var(--color-app-text);
+}
+
+/* Modo oscuro: fondos y textos de estado (alertas, badges, avisos) de las pantallas internas */
+.dark :is(.bg-red-50, .bg-red-100) { background-color: rgb(239 68 68 / 0.14); }
+.dark :is(.bg-emerald-50, .bg-emerald-100, .bg-green-50, .bg-green-100) { background-color: rgb(131 196 65 / 0.14); }
+.dark :is(.bg-amber-50, .bg-amber-100) { background-color: rgb(245 158 11 / 0.14); }
+.dark :is(.bg-sky-50, .bg-sky-100, .bg-blue-100, .bg-violet-100) { background-color: rgb(56 189 248 / 0.14); }
+.dark :is(.text-red-500, .text-red-600, .text-red-700, .text-red-800, .text-red-900) { color: #fca5a5; }
+.dark :is(.text-emerald-600, .text-emerald-700, .text-emerald-800, .text-green-700) { color: #a3d977; }
+.dark :is(.text-amber-500, .text-amber-600, .text-amber-700, .text-amber-800, .text-amber-900, .text-orange-600) { color: #fcd34d; }
+.dark :is(.text-sky-700, .text-sky-800, .text-sky-900, .text-blue-800, .text-violet-800) { color: #7dd3fc; }
+.dark :is(.border-red-200, .border-emerald-200, .border-green-200, .border-amber-200, .border-amber-300, .border-sky-200) { border-color: var(--color-app-border); }
+.dark :is(.hover\:bg-red-50:hover, .hover\:bg-amber-50:hover) { background-color: rgb(239 68 68 / 0.14); }
+.dark input, .dark select, .dark textarea { color-scheme: dark; }
+
+/* Botones de marca: el azul petróleo no se distingue sobre tarjetas oscuras */
+.dark .bg-\[\#003F63\] { background-color: #1680c4; }
+.dark .hover\:bg-\[\#00507d\]:hover { background-color: #2493d6; }
+.dark .border-\[\#003F63\] { border-color: #1680c4; }
+
 #password[type="password"]::-ms-reveal,
 #password[type="password"]::-ms-clear {
 	display: none !important;

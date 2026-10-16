@@ -90,21 +90,21 @@ function VentasPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
+    <main className="bg-app-bg">
+      <header className="border-b border-app-border bg-app-card">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
               aria-label="Volver al panel"
-              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+              className="rounded-lg p-2 text-app-muted hover:bg-app-bg"
             >
               <ArrowLeft size={21} />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">Ventas</h1>
-              <p className="text-sm text-slate-500">Farmacia Díaz ERP</p>
+              <h1 className="text-xl font-bold text-app-text">Ventas</h1>
+              <p className="text-sm text-app-muted">Farmacia Díaz ERP</p>
             </div>
           </div>
           <button
@@ -121,8 +121,8 @@ function VentasPage() {
       <section className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Historial de ventas</h2>
-            <p className="mt-1 text-sm text-slate-500">Consulta estados, detalles y totales.</p>
+            <h2 className="text-2xl font-bold text-app-text">Historial de ventas</h2>
+            <p className="mt-1 text-sm text-app-muted">Consulta estados, detalles y totales.</p>
           </div>
           <button
             type="button"
@@ -130,7 +130,7 @@ function VentasPage() {
             disabled={actualizando}
             aria-label="Actualizar historial"
             title="Actualizar historial"
-            className="rounded-lg border border-slate-300 bg-white p-2.5 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            className="rounded-lg border border-app-border bg-app-card p-2.5 text-app-text hover:bg-app-bg disabled:opacity-50"
           >
             <RefreshCw size={18} />
           </button>
@@ -139,15 +139,15 @@ function VentasPage() {
         {error && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
         {mensaje && <p role="status" className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{mensaje}</p>}
 
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
           {cargando ? (
-            <p className="p-8 text-center text-slate-500">Cargando ventas...</p>
+            <p className="p-8 text-center text-app-muted">Cargando ventas...</p>
           ) : ventas.length === 0 ? (
-            <p className="p-8 text-center text-slate-500">Todavía no hay ventas registradas.</p>
+            <p className="p-8 text-center text-app-muted">Todavía no hay ventas registradas.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[850px] text-left text-sm">
-                <thead className="bg-slate-50 text-slate-600">
+                <thead className="bg-app-bg text-app-muted">
                   <tr>
                     <th className="px-5 py-3 font-semibold">Referencia / fecha</th>
                     <th className="px-5 py-3 font-semibold">Detalle</th>
@@ -156,30 +156,30 @@ function VentasPage() {
                     <th className="px-5 py-3"><span className="sr-only">Acciones</span></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-app-border">
                   {ventas.map((venta) => (
                     <tr key={venta.id} className="align-top">
                       <td className="px-5 py-4">
-                        <p className="font-semibold text-slate-900">{venta.referencia}</p>
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="font-semibold text-app-text">{venta.referencia}</p>
+                        <p className="mt-1 text-xs text-app-muted">
                           {new Date(venta.fecha_venta).toLocaleString('es-BO')}
                         </p>
                       </td>
-                      <td className="px-5 py-4 text-slate-700">
+                      <td className="px-5 py-4 text-app-text">
                         {venta.detalles.map((detalle) => (
                           <p key={detalle.id}>
                             {detalle.cantidad} × {detalle.medicamento_nombre}
                           </p>
                         ))}
                       </td>
-                      <td className="px-5 py-4 font-semibold text-slate-900">Bs {venta.total}</td>
+                      <td className="px-5 py-4 font-semibold text-app-text">Bs {venta.total}</td>
                       <td className="px-5 py-4">
                         <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
                           venta.estado === 'completada'
                             ? 'bg-emerald-100 text-emerald-800'
                             : venta.estado === 'pendiente'
                               ? 'bg-amber-100 text-amber-800'
-                              : 'bg-slate-100 text-slate-700'
+                              : 'bg-app-bg text-app-text'
                         }`}>
                           {venta.estado}
                         </span>

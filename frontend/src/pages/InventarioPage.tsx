@@ -1,4 +1,5 @@
 
+import IconoCuadro from '../components/IconoCuadro'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -6,14 +7,12 @@ import {
   AlertTriangle,
   ArrowLeft,
   Barcode,
-  FileBarChart2,
   Package,
   Pill,
   Plus,
   RefreshCw,
   QrCode,
   Search,
-  Truck,
 } from 'lucide-react'
 
 import {
@@ -137,29 +136,29 @@ function InventarioPage() {
   })
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="bg-app-bg">
       {/* Encabezado */}
 
-      <header className="border-b border-slate-200 bg-white">
+      <header className="border-b border-app-border bg-app-card">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-4">
           <button
             type="button"
             onClick={() => navigate('/dashboard')}
-            className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100"
+            className="rounded-lg p-2 text-app-muted transition hover:bg-app-bg"
             aria-label="Volver al panel principal"
           >
             <ArrowLeft size={22} />
           </button>
 
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#003F63] text-white">
             <Pill size={25} />
           </div>
 
           <div>
-            <h1 className="text-xl font-bold text-slate-900">
+            <h1 className="text-xl font-bold text-app-text">
               Farmacia Díaz
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-app-muted">
               Gestión de inventario
             </p>
           </div>
@@ -171,10 +170,10 @@ function InventarioPage() {
 
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-slate-900">
+            <h2 className="text-3xl font-bold text-app-text">
               Inventario de medicamentos
             </h2>
-            <p className="mt-2 text-slate-500">
+            <p className="mt-2 text-app-muted">
               Consulta medicamentos, existencias y stock crítico.
             </p>
           </div>
@@ -184,7 +183,7 @@ function InventarioPage() {
               type="button"
               onClick={() => void cargarInventario()}
               disabled={cargando}
-              className="flex items-center gap-2 rounded-lg border border-blue-600 bg-white px-4 py-3 font-medium text-blue-600 transition hover:bg-blue-50 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg border border-[#003F63] bg-app-card px-4 py-3 font-medium text-[#003F63] dark:text-[#83C441] transition hover:bg-app-bg disabled:opacity-50"
             >
               <RefreshCw size={18} />
               Actualizar
@@ -192,48 +191,17 @@ function InventarioPage() {
 
             <button
               type="button"
-              onClick={() => navigate('/inventario/lotes')}
-              className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
-            >
-              <Package size={18} />
-              Ver lotes
-            </button>
-
-            {esAdministrador && (
-              <button
-                type="button"
-                onClick={() => navigate('/inventario/proveedores')}
-                className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
-              >
-                <Truck size={18} />
-                Proveedores
-              </button>
-            )}
-
-            <button
-              type="button"
               onClick={() => navigate('/inventario/identificar')}
-              className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
+              className="flex items-center gap-2 rounded-lg border border-app-border bg-app-card px-4 py-3 font-medium text-app-text transition hover:bg-app-bg"
             >
               <Barcode size={18} />
               Escanear código
             </button>
 
-            {esAdministrador && (
-              <button
-                type="button"
-                onClick={() => navigate('/inventario/reportes')}
-                className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
-              >
-                <FileBarChart2 size={18} />
-                Reportes
-              </button>
-            )}
-
             {esAdministrador && <button
               type="button"
               onClick={() => navigate('/inventario/registrar')}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+              className="flex items-center gap-2 rounded-lg bg-[#003F63] px-5 py-3 font-medium text-white transition hover:bg-[#00507d]"
             >
               <Plus size={20} />
               Nuevo medicamento
@@ -244,19 +212,19 @@ function InventarioPage() {
         {/* Resumen */}
 
         <div className="mb-6 grid gap-4 sm:grid-cols-3">
-          <section className="rounded-2xl bg-white p-5 shadow-sm">
-            <Package className="mb-3 text-blue-600" size={25} />
-            <p className="text-sm text-slate-500">
+          <section className="rounded-2xl bg-app-card p-5 shadow-sm">
+            <IconoCuadro icono={Package} color="#1680C4" className="mb-3" />
+            <p className="text-sm text-app-muted">
               Medicamentos registrados
             </p>
-            <p className="text-2xl font-bold text-slate-900">
+            <p className="text-2xl font-bold text-app-text">
               {cargando ? '...' : error ? '--' : medicamentos.length}
             </p>
           </section>
 
-          <section className="rounded-2xl bg-white p-5 shadow-sm">
-            <AlertTriangle className="mb-3 text-amber-500" size={25} />
-            <p className="text-sm text-slate-500">
+          <section className="rounded-2xl bg-app-card p-5 shadow-sm">
+            <IconoCuadro icono={AlertTriangle} color="#E05252" className="mb-3" />
+            <p className="text-sm text-app-muted">
               Stock crítico
             </p>
             <p className="text-2xl font-bold text-amber-600">
@@ -264,9 +232,9 @@ function InventarioPage() {
             </p>
           </section>
 
-          <section className="rounded-2xl bg-white p-5 shadow-sm">
-            <AlertTriangle className="mb-3 text-red-500" size={25} />
-            <p className="text-sm text-slate-500">
+          <section className="rounded-2xl bg-app-card p-5 shadow-sm">
+            <IconoCuadro icono={AlertTriangle} color="#E05252" className="mb-3" />
+            <p className="text-sm text-app-muted">
               Medicamentos agotados
             </p>
             <p className="text-2xl font-bold text-red-600">
@@ -277,11 +245,11 @@ function InventarioPage() {
 
         {/* Tabla de medicamentos */}
 
-        <section className="rounded-2xl bg-white p-6 shadow-sm">
+        <section className="rounded-2xl bg-app-card p-6 shadow-sm">
           <div className="relative mb-6">
             <Search
               size={20}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-app-muted"
             />
 
             <input
@@ -289,12 +257,12 @@ function InventarioPage() {
               value={busqueda}
               onChange={(event) => setBusqueda(event.target.value)}
               placeholder="Buscar por nombre, código de barras o principio activo"
-              className="w-full rounded-lg border border-slate-300 py-3 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-lg border border-app-border py-3 pl-11 pr-4 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/30"
             />
           </div>
 
           {cargando ? (
-            <p className="py-8 text-center text-slate-500">
+            <p className="py-8 text-center text-app-muted">
               Cargando inventario...
             </p>
           ) : error ? (
@@ -302,13 +270,13 @@ function InventarioPage() {
               {error}
             </p>
           ) : medicamentosFiltrados.length === 0 ? (
-            <p className="py-8 text-center text-slate-500">
+            <p className="py-8 text-center text-app-muted">
               No se encontraron medicamentos.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[950px] text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50 text-slate-600">
+                <thead className="border-b border-app-border bg-app-bg text-app-muted">
                   <tr>
                     <th className="px-4 py-3 font-semibold">
                       Medicamento
@@ -352,32 +320,32 @@ function InventarioPage() {
                     return (
                       <tr
                         key={medicamento.id}
-                        className="border-b border-slate-100 hover:bg-slate-50"
+                        className="border-b border-app-border hover:bg-app-bg"
                       >
-                        <td className="px-4 py-4 font-medium text-slate-900">
+                        <td className="px-4 py-4 font-medium text-app-text">
                           {medicamento.nombre}
                         </td>
 
-                        <td className="px-4 py-4 text-slate-600">
+                        <td className="px-4 py-4 text-app-muted">
                           {medicamento.principio_activo}
                         </td>
 
-                        <td className="px-4 py-4 text-slate-600">
+                        <td className="px-4 py-4 text-app-muted">
                           {medicamento.presentacion}
                         </td>
 
-                        <td className="px-4 py-4 text-slate-600">
+                        <td className="px-4 py-4 text-app-muted">
                           <span className="inline-flex items-center gap-2">
                             <Barcode size={17} />
                             {medicamento.codigo_barras}
                           </span>
                         </td>
 
-                        <td className="px-4 py-4 font-semibold text-slate-900">
+                        <td className="px-4 py-4 font-semibold text-app-text">
                           {stockActual}
                         </td>
 
-                        <td className="px-4 py-4 text-slate-600">
+                        <td className="px-4 py-4 text-app-muted">
                           {medicamento.stock_minimo}
                         </td>
 
@@ -394,7 +362,7 @@ function InventarioPage() {
                             <button
                               type="button"
                               onClick={() => navigate(`/inventario/medicamentos/${medicamento.id}/editar`)}
-                              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                              className="rounded-lg border border-app-border px-3 py-2 text-sm font-medium text-app-text hover:bg-app-bg"
                             >
                               Editar
                             </button>
@@ -410,7 +378,7 @@ function InventarioPage() {
                                   setError('No se pudo cambiar el estado del medicamento.')
                                 }
                               }}
-                              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                              className="rounded-lg border border-app-border px-3 py-2 text-sm font-medium text-app-text hover:bg-app-bg"
                             >
                               {medicamento.activo ? 'Desactivar' : 'Activar'}
                             </button>
@@ -420,7 +388,7 @@ function InventarioPage() {
                               onClick={() => setMedicamentoQR(medicamento)}
                               aria-label={`Mostrar QR de ${medicamento.nombre}`}
                               title="Mostrar QR"
-                              className="rounded-lg border border-slate-300 p-2 text-slate-700 hover:bg-slate-50"
+                              className="rounded-lg border border-app-border p-2 text-app-text hover:bg-app-bg"
                             >
                               <QrCode size={17} />
                             </button>
@@ -432,7 +400,7 @@ function InventarioPage() {
                             className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
                               medicamento.activo
                                 ? 'bg-emerald-100 text-emerald-700'
-                                : 'bg-slate-200 text-slate-600'
+                                : 'bg-app-border text-app-muted'
                             }`}
                           >
                             {medicamento.activo ? 'Activo' : 'Inactivo'}

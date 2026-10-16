@@ -94,27 +94,27 @@ function RegistrarMedicamentoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="bg-app-bg">
+      <header className="border-b border-app-border bg-app-card">
         <div className="mx-auto flex max-w-5xl items-center gap-4 px-6 py-4">
           <button
             type="button"
             onClick={() => navigate('/inventario')}
             aria-label="Volver al inventario"
-            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+            className="rounded-lg p-2 text-app-muted hover:bg-app-bg"
           >
             <ArrowLeft size={22} />
           </button>
 
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#003F63] text-white">
             <Pill size={25} />
           </div>
 
           <div>
-            <h1 className="text-xl font-bold text-slate-900">
+            <h1 className="text-xl font-bold text-app-text">
               Farmacia Díaz
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-app-muted">
               Gestión de inventario
             </p>
           </div>
@@ -123,18 +123,18 @@ function RegistrarMedicamentoPage() {
 
       <main className="mx-auto max-w-5xl px-6 py-8">
         <div className="mb-7">
-          <h2 className="text-3xl font-bold text-slate-900">
+          <h2 className="text-3xl font-bold text-app-text">
             Registrar medicamento
           </h2>
 
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-app-muted">
             Ingresa los datos del nuevo medicamento.
           </p>
         </div>
 
         <form
           onSubmit={guardarMedicamento}
-          className="rounded-2xl bg-white p-6 shadow-sm md:p-8"
+          className="rounded-2xl bg-app-card p-6 shadow-sm md:p-8"
         >
           {error && (
             <div
@@ -155,7 +155,7 @@ function RegistrarMedicamentoPage() {
             </div>
           )}
 
-          <h3 className="mb-5 text-lg font-semibold text-slate-900">
+          <h3 className="mb-5 text-lg font-semibold text-app-text">
             Información del medicamento
           </h3>
 
@@ -163,7 +163,7 @@ function RegistrarMedicamentoPage() {
             <div>
               <label
                 htmlFor="nombre"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-app-text"
               >
                 Nombre del medicamento *
               </label>
@@ -175,14 +175,14 @@ function RegistrarMedicamentoPage() {
                 value={formulario.nombre}
                 onChange={(e) => actualizarCampo('nombre', e.target.value)}
                 placeholder="Ej. Ibuprofeno 400 mg"
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-app-border px-4 py-3 outline-none focus:border-brand-green"
               />
             </div>
 
             <div>
               <label
                 htmlFor="principio_activo"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-app-text"
               >
                 Principio activo *
               </label>
@@ -196,14 +196,14 @@ function RegistrarMedicamentoPage() {
                   actualizarCampo('principio_activo', e.target.value)
                 }
                 placeholder="Ej. Ibuprofeno"
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-app-border px-4 py-3 outline-none focus:border-brand-green"
               />
             </div>
 
             <div>
               <label
                 htmlFor="presentacion"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-app-text"
               >
                 Presentación *
               </label>
@@ -217,14 +217,14 @@ function RegistrarMedicamentoPage() {
                   actualizarCampo('presentacion', e.target.value)
                 }
                 placeholder="Ej. Tableta 400 mg"
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-app-border px-4 py-3 outline-none focus:border-brand-green"
               />
             </div>
 
             <div>
               <label
                 htmlFor="codigo_barras"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-app-text"
               >
                 Código de barras *
               </label>
@@ -238,14 +238,14 @@ function RegistrarMedicamentoPage() {
                   actualizarCampo('codigo_barras', e.target.value)
                 }
                 placeholder="Ej. 777000000002"
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-app-border px-4 py-3 outline-none focus:border-brand-green"
               />
             </div>
 
             <div>
               <label
                 htmlFor="registro_sanitario"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-app-text"
               >
                 Registro sanitario
               </label>
@@ -258,14 +258,14 @@ function RegistrarMedicamentoPage() {
                   actualizarCampo('registro_sanitario', e.target.value)
                 }
                 placeholder="Número de registro sanitario"
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-app-border px-4 py-3 outline-none focus:border-brand-green"
               />
             </div>
 
             <div>
               <label
                 htmlFor="stock_minimo"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-app-text"
               >
                 Stock mínimo
               </label>
@@ -278,14 +278,14 @@ function RegistrarMedicamentoPage() {
                 onChange={(e) =>
                   actualizarCampo('stock_minimo', Number(e.target.value))
                 }
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-app-border px-4 py-3 outline-none focus:border-brand-green"
               />
             </div>
 
             <div>
               <label
                 htmlFor="unidad_medida"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-app-text"
               >
                 Unidad de medida
               </label>
@@ -295,7 +295,7 @@ function RegistrarMedicamentoPage() {
                 onChange={(e) =>
                   actualizarCampo('unidad_medida', e.target.value)
                 }
-                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-app-border bg-app-card px-4 py-3 outline-none focus:border-brand-green"
               >
                 <option value="unidad">Unidad</option>
                 <option value="caja">Caja</option>
@@ -309,7 +309,7 @@ function RegistrarMedicamentoPage() {
             <div className="md:col-span-2">
               <label
                 htmlFor="descripcion"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-app-text"
               >
                 Descripción
               </label>
@@ -321,20 +321,20 @@ function RegistrarMedicamentoPage() {
                   actualizarCampo('descripcion', e.target.value)
                 }
                 placeholder="Información adicional del medicamento"
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-app-border px-4 py-3 outline-none focus:border-brand-green"
               />
             </div>
           </div>
 
-          <p className="mt-5 text-sm text-slate-500">
+          <p className="mt-5 text-sm text-app-muted">
             Los campos marcados con * son obligatorios.
           </p>
 
-          <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-6">
+          <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-app-border pt-6">
             <button
               type="button"
               onClick={() => navigate('/inventario')}
-              className="rounded-lg border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-lg border border-app-border px-5 py-3 font-medium text-app-text hover:bg-app-bg"
             >
               Cancelar
             </button>
@@ -342,7 +342,7 @@ function RegistrarMedicamentoPage() {
             <button
               type="submit"
               disabled={guardando}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-[#003F63] px-6 py-3 font-medium text-white hover:bg-[#00507d] disabled:opacity-50"
             >
               <Save size={19} />
               {guardando ? 'Guardando...' : 'Guardar medicamento'}

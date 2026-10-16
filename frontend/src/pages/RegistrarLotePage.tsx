@@ -141,16 +141,16 @@ function RegistrarLotePage() {
   }
 
   const estiloCampo =
-    'w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100'
+    'w-full rounded-xl border border-app-border bg-app-card px-4 py-3 text-app-text outline-none transition focus:border-brand-green focus:ring-2 focus:ring-brand-green/30'
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="bg-app-bg">
+      <header className="border-b border-app-border bg-app-card">
         <div className="mx-auto flex max-w-5xl items-center gap-4 px-6 py-5">
           <button
             type="button"
             onClick={() => navigate('/inventario')}
-            className="rounded-xl p-2 text-slate-600 hover:bg-slate-100"
+            className="rounded-xl p-2 text-app-muted hover:bg-app-bg"
             aria-label="Volver al inventario"
           >
             <ArrowLeft size={22} />
@@ -161,10 +161,10 @@ function RegistrarLotePage() {
           </div>
 
           <div>
-            <h1 className="text-xl font-bold text-slate-900">
+            <h1 className="text-xl font-bold text-app-text">
               Farmacia Díaz
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-app-muted">
               Gestión de inventario
             </p>
           </div>
@@ -173,10 +173,10 @@ function RegistrarLotePage() {
 
       <main className="mx-auto max-w-3xl px-6 py-10">
         <div className="mb-7">
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-2xl font-bold text-app-text">
             Registrar lote
           </h2>
-          <p className="mt-2 text-slate-600">
+          <p className="mt-2 text-app-muted">
             Registra un lote de un medicamento con su fecha de
             vencimiento, cantidad y precios.
           </p>
@@ -184,7 +184,7 @@ function RegistrarLotePage() {
 
         <form
           onSubmit={(evento) => void guardarLote(evento)}
-          className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+          className="rounded-2xl border border-app-border bg-app-card p-6 shadow-sm sm:p-8"
         >
           {error && (
             <div
@@ -208,7 +208,7 @@ function RegistrarLotePage() {
             <div className="sm:col-span-2">
               <label
                 htmlFor="medicamento"
-                className="mb-2 block text-sm font-semibold text-slate-700"
+                className="mb-2 block text-sm font-semibold text-app-text"
               >
                 Medicamento *
               </label>
@@ -239,7 +239,7 @@ function RegistrarLotePage() {
             <div>
               <label
                 htmlFor="proveedor"
-                className="mb-2 block text-sm font-semibold text-slate-700"
+                className="mb-2 block text-sm font-semibold text-app-text"
               >
                 Proveedor
               </label>
@@ -271,7 +271,7 @@ function RegistrarLotePage() {
             <div>
               <label
                 htmlFor="numero_lote"
-                className="mb-2 block text-sm font-semibold text-slate-700"
+                className="mb-2 block text-sm font-semibold text-app-text"
               >
                 Número de lote *
               </label>
@@ -291,7 +291,7 @@ function RegistrarLotePage() {
             <div>
               <label
                 htmlFor="fecha_vencimiento"
-                className="mb-2 block text-sm font-semibold text-slate-700"
+                className="mb-2 block text-sm font-semibold text-app-text"
               >
                 Fecha de vencimiento *
               </label>
@@ -310,7 +310,7 @@ function RegistrarLotePage() {
             <div>
               <label
                 htmlFor="cantidad_inicial"
-                className="mb-2 block text-sm font-semibold text-slate-700"
+                className="mb-2 block text-sm font-semibold text-app-text"
               >
                 Cantidad inicial *
               </label>
@@ -332,7 +332,7 @@ function RegistrarLotePage() {
             <div>
               <label
                 htmlFor="precio_compra"
-                className="mb-2 block text-sm font-semibold text-slate-700"
+                className="mb-2 block text-sm font-semibold text-app-text"
               >
                 Precio de compra (Bs) *
               </label>
@@ -354,7 +354,7 @@ function RegistrarLotePage() {
             <div>
               <label
                 htmlFor="precio_venta"
-                className="mb-2 block text-sm font-semibold text-slate-700"
+                className="mb-2 block text-sm font-semibold text-app-text"
               >
                 Precio de venta (Bs) *
               </label>
@@ -374,11 +374,11 @@ function RegistrarLotePage() {
             </div>
           </div>
 
-          <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-6">
+          <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-app-border pt-6">
             <button
               type="button"
               onClick={() => navigate('/inventario')}
-              className="rounded-xl border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-xl border border-app-border px-5 py-3 font-medium text-app-text hover:bg-app-bg"
             >
               Cancelar
             </button>

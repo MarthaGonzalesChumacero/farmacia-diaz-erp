@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { getUsuarioActual, type RolUsuario } from '../services/authService'
+import AppLayout from './AppLayout'
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -10,8 +11,10 @@ interface ProtectedRouteProps {
 function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const accessToken = localStorage.getItem('accessToken')
   const [rol, setRol] = useState<RolUsuario | null>(null)
-  const [cargandoRol, setCargandoRol] = useState(Boolean(requiredRole))
   const [sesionInvalida, setSesionInvalida] = useState(false)
+
+  // Derivado para que sea correcto al reutilizarse la instancia entre rutas.
+  const cargandoRol = Boolean(requiredRole) && rol === null && !sesionInvalida
 
   useEffect(() => {
     if (!requiredRole || !accessToken) return
@@ -28,9 +31,6 @@ function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
           setSesionInvalida(true)
         }
       })
-      .finally(() => {
-        if (montado) setCargandoRol(false)
-      })
 
     return () => {
       montado = false
@@ -46,14 +46,18 @@ function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   }
 
   if (requiredRole && cargandoRol) {
-    return <main className="p-8 text-center text-slate-500">Verificando permisos...</main>
+    return (
+      <AppLayout>
+        <main className="p-8 text-center text-app-muted">Verificando permisos...</main>
+      </AppLayout>
+    )
   }
 
   if (requiredRole && rol !== requiredRole) {
     return <Navigate to="/dashboard" replace />
   }
 
-  return children
+  return <AppLayout>{children}</AppLayout>
 }
 
 export default ProtectedRoute

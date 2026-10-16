@@ -1,10 +1,12 @@
 
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, LockKeyhole, Pill, User } from 'lucide-react'
+import { Eye, EyeOff, LockKeyhole, User } from 'lucide-react'
 import axios from 'axios'
 
 import { login } from '../services/authService'
+import ThemeToggle from '../components/ThemeToggle'
+import Logo from '../components/Logo'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -69,18 +71,19 @@ function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-      <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
+    <main className="relative flex min-h-screen items-center justify-center bg-app-bg px-4">
+      <ThemeToggle className="absolute right-4 top-4" />
+      <section className="w-full max-w-md rounded-2xl border border-app-border bg-app-card p-8 shadow-md">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600 text-white">
-            <Pill size={32} />
+          <div className="mx-auto mb-4 w-fit">
+            <Logo className="h-36 w-auto" />
           </div>
 
-          <h1 className="text-3xl font-bold text-slate-900">
+          <h1 className="sr-only">
             Farmacia Díaz
           </h1>
 
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-app-muted">
             Sistema ERP de gestión farmacéutica
           </p>
         </div>
@@ -92,7 +95,7 @@ function LoginPage() {
           <div>
             <label
               htmlFor="username"
-              className="mb-2 block text-sm font-medium text-slate-700"
+              className="mb-2 block text-sm font-medium text-app-text"
             >
               Usuario
             </label>
@@ -111,7 +114,7 @@ function LoginPage() {
                 placeholder="Ingrese su usuario"
                 autoComplete="username"
                 required
-                className="w-full rounded-lg border border-slate-300 py-3 pl-11 pr-4 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-lg border border-app-border bg-app-bg py-3 pl-11 pr-4 text-app-text outline-none transition placeholder:text-app-muted focus:border-brand-green focus:ring-2 focus:ring-brand-green/30"
               />
             </div>
           </div>
@@ -119,7 +122,7 @@ function LoginPage() {
           <div>
             <label
               htmlFor="password"
-              className="mb-2 block text-sm font-medium text-slate-700"
+              className="mb-2 block text-sm font-medium text-app-text"
             >
               Contraseña
             </label>
@@ -138,7 +141,7 @@ function LoginPage() {
                 placeholder="Ingrese su contraseña"
                 autoComplete="current-password"
                 required
-                className="w-full rounded-lg border border-slate-300 py-3 pl-11 pr-12 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-lg border border-app-border bg-app-bg py-3 pl-11 pr-12 text-app-text outline-none transition placeholder:text-app-muted focus:border-brand-green focus:ring-2 focus:ring-brand-green/30"
               />
 
               <button
@@ -146,7 +149,7 @@ function LoginPage() {
                 onClick={() => setShowPassword((visible) => !visible)}
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 aria-pressed={showPassword}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-slate-500 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-app-muted hover:text-app-text focus:outline-none focus:ring-2 focus:ring-brand-green"
               >
                 {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
@@ -156,7 +159,7 @@ function LoginPage() {
           {error && (
             <div
               role="alert"
-              className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
             >
               {error}
             </div>
@@ -165,13 +168,13 @@ function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
+            className="w-full rounded-lg bg-[#003F63] px-4 py-3 font-semibold text-white transition hover:bg-[#00507d] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#83C441] dark:text-[#081724] dark:hover:bg-[#95d155]"
           >
             {loading ? 'Ingresando...' : 'Iniciar sesión'}
           </button>
         </form>
 
-        <p className="mt-8 text-center text-xs text-slate-400">
+        <p className="mt-8 text-center text-xs text-app-muted">
           ERP Farmacia Díaz · Gestión 2026
         </p>
       </section>
