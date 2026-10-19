@@ -24,15 +24,38 @@ load_dotenv(BASE_DIR / ".env")
 # Seguridad
 # ======================================
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.environ["POSTGRES_PASSWORD"]
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     "mc-inventario",
 ]
+
+
+# ======================================
+# Configuración de seguridad
+# En desarrollo (DEBUG=True): sin HTTPS.
+# En producción (DEBUG=False): activar
+# variables de entorno de seguridad.
+# ======================================
+
+if not DEBUG:
+    # HTTPS y cookies seguras solo en producción.
+    SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv(
+        "SECURE_HSTS_INCLUDE_SUBDOMAINS", "False"
+    ).lower() == "true"
+    SECURE_HSTS_PRELOAD = os.getenv(
+        "SECURE_HSTS_PRELOAD", "False"
+    ).lower() == "true"
+    SECURE_SSL_REDIRECT = os.getenv(
+        "SECURE_SSL_REDIRECT", "False"
+    ).lower() == "true"
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 
 # ======================================
