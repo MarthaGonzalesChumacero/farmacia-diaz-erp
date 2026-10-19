@@ -25,10 +25,6 @@ class UsuarioERPAuthentication(authentication.BaseAuthentication):
         if force_user is not None:
             return (force_user, getattr(request, '_force_auth_token', None))
 
-        usuario_existente = getattr(request, '_user', None)
-        if usuario_existente and getattr(usuario_existente, 'is_authenticated', False):
-            return (usuario_existente, None)
-
         auth_header = request.headers.get('Authorization', '')
         if not auth_header:
             return None
