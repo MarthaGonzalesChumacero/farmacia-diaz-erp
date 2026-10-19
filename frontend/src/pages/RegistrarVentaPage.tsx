@@ -1,10 +1,21 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowLeft, Plus, ShoppingCart, Trash2 } from 'lucide-react'
+import {
+  ArrowLeft,
+  Barcode,
+  Plus,
+  RefreshCw,
+  Search,
+  ShoppingCart,
+  Trash2,
+} from 'lucide-react'
 
 import {
+  getLote,
   getLotes,
+  getMedicamento,
+  getMedicamentoPorCodigo,
   getMedicamentos,
   type Lote,
   type Medicamento,
@@ -14,6 +25,8 @@ import {
   type NuevaVenta,
   type NuevoDetalleVenta,
 } from '../services/ventasService'
+import BarcodeScanner from '../components/BarcodeScanner'
+import { identificarCodigo } from '../lib/identificarCodigo'
 
 interface LineaCarrito extends NuevoDetalleVenta {
   stock_disponible: number
@@ -63,6 +76,12 @@ function RegistrarVentaPage() {
   const [error, setError] = useState('')
   const [exito, setExito] = useState('')
 
+  // Estado del escáner de códigos
+  const [mostrarEscaner, setMostrarEscaner] = useState(false)
+  const [lectorId, setLectorId] = useState(0)
+  const [procesandoEscaneo, setProcesandoEscaneo] = useState(false)
+  const [codigoManual, setCodigoManual] = useState('')
+
   useEffect(() => {
     async function cargarCatalogo() {
       try {
@@ -102,33 +121,46 @@ function RegistrarVentaPage() {
       0,
     )
 
-  const agregarAlCarrito = () => {
-    const id = Number(medicamentoId)
-    const unidades = Number(cantidad)
-    const medicamento = medicamentos.find((item) => item.id === id)
-    const lotesElegibles = lotesDisponibles(id)
+  function agregarMedicamento(
+    med: Medicamento,
+    unidades: number,
+    esEscaneo = false,
+  ): boolean {
+    if (!med.activo) {
+      setError(`El medicamento "${med.nombre}" está inactivo y no se puede vender.`)
+      return false
+    }
 
-    if (!medicamento || !Number.isInteger(unidades) || unidades < 1) {
-      setError('Selecciona un medicamento y una cantidad válida.')
-      return
+    const lotesElegibles = lotesDisponibles(med.id)
+    const stockDisponible = stockPorMedicamento(med.id)
+
+    if (stockDisponible <= 0 || lotesElegibles.length === 0) {
+      setError(`El medicamento "${med.nombre}" no tiene stock disponible para la venta.`)
+      return false
+    }
+
+    const unidadesEnCarrito =
+      carrito.find((item) => item.medicamento_id === med.id)?.cantidad ?? 0
+
+    if (unidadesEnCarrito + unidades > stockDisponible) {
+      setError(
+        `Stock insuficiente para "${med.nombre}". Disponible: ${stockDisponible}${
+          unidadesEnCarrito > 0 ? ` (ya tienes ${unidadesEnCarrito} en la venta)` : ''
+        }.`,
+      )
+      return false
     }
 
     const lotePrecio = lotesElegibles[0]
-    const stockDisponible = stockPorMedicamento(id)
-    const unidadesEnCarrito = carrito.find(
-      (item) => item.medicamento_id === id,
-    )?.cantidad ?? 0
-
-    if (!lotePrecio || unidadesEnCarrito + unidades > stockDisponible) {
-      setError(`Stock insuficiente. Disponible: ${stockDisponible}.`)
-      return
-    }
+    const precioUnitario = Number(lotePrecio.precio_venta).toFixed(2)
+    const nuevaCantidad = unidadesEnCarrito + unidades
+    const nuevoSubtotal = (nuevaCantidad * Number(precioUnitario)).toFixed(2)
 
     setCarrito((actual) => {
-      const existente = actual.find((item) => item.medicamento_id === id)
+      const existente = actual.find((item) => item.medicamento_id === med.id)
       if (existente) {
         return actual.map((item) =>
-          item.medicamento_id === id
+          item.medicamento_id === med.id
             ? { ...item, cantidad: item.cantidad + unidades }
             : item,
         )
@@ -137,16 +169,85 @@ function RegistrarVentaPage() {
       return [
         ...actual,
         {
-          medicamento_id: id,
-          medicamento_nombre: medicamento.nombre,
+          medicamento_id: med.id,
+          medicamento_nombre: med.nombre,
           cantidad: unidades,
-          precio_unitario: Number(lotePrecio.precio_venta).toFixed(2),
+          precio_unitario: precioUnitario,
           stock_disponible: stockDisponible,
         },
       ]
     })
+
+    setError('')
+    if (esEscaneo) {
+      setExito(
+        `Agregado por escaneo: ${med.nombre} · 1 unidad (Bs ${precioUnitario}) · Subtotal: Bs ${nuevoSubtotal}`,
+      )
+    } else {
+      setExito('')
+    }
+    return true
+  }
+
+  const agregarAlCarrito = () => {
+    const id = Number(medicamentoId)
+    const unidades = Number(cantidad)
+    const medicamento = medicamentos.find((item) => item.id === id)
+
+    if (!medicamento || !Number.isInteger(unidades) || unidades < 1) {
+      setError('Selecciona un medicamento y una cantidad válida.')
+      return
+    }
+
+    agregarMedicamento(medicamento, unidades, false)
+  }
+
+  async function procesarCodigoEscaneado(valor: string) {
+    const limpio = valor.trim()
+    if (!limpio || procesandoEscaneo) return
+
+    setProcesandoEscaneo(true)
     setError('')
     setExito('')
+
+    try {
+      const identificacion = await identificarCodigo(limpio, {
+        getMedicamento,
+        getLote,
+        getMedicamentoPorCodigo,
+      })
+
+      let med: Medicamento | null = null
+
+      if (identificacion.tipo === 'medicamento') {
+        med = identificacion.registro
+      } else if (identificacion.tipo === 'lote') {
+        const idMed = identificacion.registro.medicamento
+        med =
+          medicamentos.find((m) => m.id === idMed) ??
+          (await getMedicamento(idMed))
+      } else {
+        // Búsqueda de respaldo en catálogo local por código de barras
+        med =
+          medicamentos.find(
+            (m) =>
+              m.codigo_barras &&
+              m.codigo_barras.trim().toLowerCase() === limpio.toLowerCase(),
+          ) ?? null
+      }
+
+      if (!med) {
+        setError(`El código "${limpio}" no corresponde a ningún medicamento registrado.`)
+        return
+      }
+
+      agregarMedicamento(med, 1, true)
+    } catch (err) {
+      console.error('Error al identificar código escaneado:', err)
+      setError('No se pudo identificar el código escaneado.')
+    } finally {
+      setProcesandoEscaneo(false)
+    }
   }
 
   const total = carrito.reduce(
@@ -227,7 +328,103 @@ function RegistrarVentaPage() {
         <form onSubmit={(evento) => void registrar(evento)}>
           <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
             <section className="rounded-xl border border-app-border bg-app-card p-5">
-              <h3 className="mb-4 font-semibold text-app-text">Productos</h3>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h3 className="font-semibold text-app-text">Productos</h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMostrarEscaner((prev) => !prev)
+                    setError('')
+                    setExito('')
+                  }}
+                  className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors ${
+                    mostrarEscaner
+                      ? 'border border-app-border bg-app-bg text-app-text hover:bg-app-border'
+                      : 'bg-emerald-700 text-white hover:bg-emerald-800'
+                  }`}
+                >
+                  <Barcode size={18} />
+                  {mostrarEscaner ? 'Cerrar escáner' : 'Escanear código'}
+                </button>
+              </div>
+
+              {mostrarEscaner && (
+                <div className="mb-6 rounded-xl border border-app-border bg-app-bg p-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-app-text">
+                        Lector de códigos de barras y QR
+                      </p>
+                      <p className="text-xs text-app-muted">
+                        Apunta la cámara al código de barras del medicamento
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setError('')
+                        setExito('')
+                        setLectorId((n) => n + 1)
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-app-border bg-app-card px-2.5 py-1.5 text-xs font-medium text-app-text hover:bg-app-bg"
+                    >
+                      <RefreshCw size={14} />
+                      Escanear otro código
+                    </button>
+                  </div>
+
+                  <BarcodeScanner
+                    key={lectorId}
+                    onDetected={(valor) => void procesarCodigoEscaneado(valor)}
+                  />
+
+                  {procesandoEscaneo && (
+                    <p className="mt-2 text-center text-xs font-semibold text-emerald-700">
+                      Identificando medicamento y agregando 1 unidad...
+                    </p>
+                  )}
+
+                  <form
+                    onSubmit={(evento) => {
+                      evento.preventDefault()
+                      if (codigoManual.trim()) {
+                        void procesarCodigoEscaneado(codigoManual)
+                        setCodigoManual('')
+                      }
+                    }}
+                    className="mt-3 flex gap-2"
+                  >
+                    <input
+                      type="text"
+                      value={codigoManual}
+                      onChange={(evento) => setCodigoManual(evento.target.value)}
+                      placeholder="O escribe el código / escanea con lector USB"
+                      className="min-w-0 flex-1 rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm"
+                    />
+                    <button
+                      type="submit"
+                      disabled={procesandoEscaneo || !codigoManual.trim()}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-[#003F63] px-3 py-2 text-xs font-semibold text-white hover:bg-[#002f4a] disabled:opacity-50"
+                    >
+                      <Search size={14} />
+                      Buscar
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* Mensajes de retroalimentación en la sección de productos */}
+              {error && (
+                <div role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+              {exito && (
+                <div role="status" className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">
+                  {exito}
+                </div>
+              )}
+
               <div className="grid gap-3 sm:grid-cols-[1fr_130px_auto]">
                 <select
                   value={medicamentoId}
@@ -235,7 +432,7 @@ function RegistrarVentaPage() {
                   disabled={cargando}
                   className="rounded-lg border border-app-border bg-app-card px-3 py-2.5"
                 >
-                  <option value="">Seleccionar medicamento</option>
+                  <option value="">Seleccionar medicamento manualmente</option>
                   {medicamentos.map((medicamento) => {
                     const stock = stockPorMedicamento(medicamento.id)
                     return (
