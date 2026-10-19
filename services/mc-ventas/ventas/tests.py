@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from unittest.mock import Mock, patch
 
+from .authentication import UsuarioERP
 from .models import Venta
 from .clients.inventario_client import (
     InventarioClient,
@@ -13,10 +14,22 @@ from .clients.inventario_client import (
 )
 
 
+def usuario_erp(pk=100, username="admin-prueba", rol="administrador", activo=True):
+    return UsuarioERP(
+        pk=pk,
+        id=pk,
+        username=username,
+        rol=rol,
+        activo=activo,
+        get_username=lambda: username,
+    )
+
+
 class VentaAPITestCase(TestCase):
 
     def setUp(self):
         self.client = APIClient()
+        self.client.force_authenticate(user=usuario_erp())
         self.url = '/ventas/'
 
     @patch('ventas.services.venta_service.InventarioClient.registrar_venta')
@@ -402,3 +415,89 @@ class InventarioClientContractTests(SimpleTestCase):
                 referencia='V-HTTP-003',
                 detalles=[{'medicamento_id': 4, 'cantidad': 1}],
             )
+
+
+class VentaSeguridadTestCase(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.url = '/ventas/'
+
+    def test_listar_ventas_sin_token_devuelve_401(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_crear_venta_sin_token_devuelve_401(self):
+        datos = {
+            'referencia': 'TEST-SEC-001',
+            'detalles': [{'medicamento_id': 1, 'cantidad': 1, 'precio_unitario': '10.00'}],
+        }
+        response = self.client.post(self.url, datos, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_token_malformado_devuelve_401(self):
+        response = self.client.get(self.url, HTTP_AUTHORIZATION='TokenInvalido')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @patch('ventas.authentication.urlopen')
+    def test_token_invalido_o_expirado_devuelve_401(self, mock_urlopen):
+        from urllib.error import HTTPError
+        from io import BytesIO
+        mock_urlopen.side_effect = HTTPError(
+            url='http://mc-usuarios:8000/usuarios/me/',
+            code=401,
+            msg='Unauthorized',
+            hdrs={},
+            fp=BytesIO(b'{"detail":"Token invalido"}'),
+        )
+        response = self.client.get(self.url, HTTP_AUTHORIZATION='Bearer token-expirado')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @patch('ventas.authentication.urlopen')
+    def test_usuario_inactivo_devuelve_403(self, mock_urlopen):
+        from io import BytesIO
+        mock_res = Mock()
+        mock_res.status = 200
+        mock_res.read.return_value = b'{"id": 2, "username": "inactivo", "rol": "auxiliar", "activo": false}'
+        mock_urlopen.return_value.__enter__.return_value = mock_res
+
+        response = self.client.get(self.url, HTTP_AUTHORIZATION='Bearer token-inactivo')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    @patch('ventas.authentication.urlopen')
+    def test_usuario_rol_no_autorizado_devuelve_403(self, mock_urlopen):
+        from io import BytesIO
+        mock_res = Mock()
+        mock_res.status = 200
+        mock_res.read.return_value = b'{"id": 3, "username": "invitado", "rol": "cliente", "activo": true}'
+        mock_urlopen.return_value.__enter__.return_value = mock_res
+
+        response = self.client.get(self.url, HTTP_AUTHORIZATION='Bearer token-invitado')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_auxiliar_autenticado_puede_listar_ventas(self):
+        self.client.force_authenticate(user=usuario_erp(rol='auxiliar'))
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @patch('ventas.services.venta_service.InventarioClient.registrar_venta')
+    def test_auxiliar_autenticado_puede_crear_venta(self, mock_inventario):
+        self.client.force_authenticate(user=usuario_erp(rol='auxiliar'))
+        datos = {
+            'referencia': 'TEST-AUX-001',
+            'detalles': [
+                {
+                    'medicamento_id': 1,
+                    'medicamento_nombre': 'Paracetamol',
+                    'cantidad': 1,
+                    'precio_unitario': '10.00',
+                }
+            ],
+        }
+        response = self.client.post(self.url, datos, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_administrador_autenticado_puede_listar_ventas(self):
+        self.client.force_authenticate(user=usuario_erp(rol='administrador'))
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

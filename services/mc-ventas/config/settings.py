@@ -204,6 +204,14 @@ REST_FRAMEWORK = {
         'drf_spectacular.openapi.AutoSchema'
     ),
 
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'ventas.authentication.UsuarioERPAuthentication',
+    ],
+
+    'DEFAULT_PERMISSION_CLASSES': [
+        'ventas.authentication.UsuarioERPActivo',
+    ],
+
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
