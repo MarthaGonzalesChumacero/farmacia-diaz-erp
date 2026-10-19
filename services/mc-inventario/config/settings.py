@@ -93,7 +93,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.debug",
             ],
         },
@@ -197,8 +196,26 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
+
+    # Autenticación JWT validada mediante mc-usuarios.
+    # Sustituye SessionAuthentication y BasicAuthentication
+    # como mecanismos predeterminados de la API.
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "inventory.authentication.UsuarioERPAuthentication",
+    ],
+
+    # Los endpoints requieren autenticación por defecto.
+    # Los permisos específicos de administrador y auxiliar
+    # definidos en views.py se mantienen.
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
 }
 
+
+# ======================================
+# Documentación API
+# ======================================
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Farmacia Díaz ERP API",

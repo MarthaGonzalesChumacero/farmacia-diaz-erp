@@ -1,3 +1,4 @@
+
 from datetime import timedelta
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
@@ -6,8 +7,7 @@ from urllib.error import URLError
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.test import APIClient
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIClient, APIRequestFactory
 
 from inventory.models import (
     Alerta,
@@ -237,7 +237,11 @@ class CatalogoAPITests(TestCase):
 
         self.assertEqual(crear_lote.status_code, 403)
         self.assertEqual(crear_movimiento.status_code, 403)
-        self.assertFalse(Lote.objects.filter(numero_lote="LOTE-AUX-RECHAZADO").exists())
+        self.assertFalse(
+            Lote.objects.filter(
+                numero_lote="LOTE-AUX-RECHAZADO"
+            ).exists()
+        )
 
     def test_auxiliar_lee_catalogos_pero_no_edita_lote_proveedor_o_alerta(self):
         proveedor = Proveedor.objects.create(nombre="Proveedor protegido")
@@ -270,8 +274,10 @@ class CatalogoAPITests(TestCase):
             self.client.post(
                 "/medicamentos/",
                 {
-                    "nombre": "Nuevo", "principio_activo": "X",
-                    "presentacion": "Caja", "codigo_barras": "AUX-X",
+                    "nombre": "Nuevo",
+                    "principio_activo": "X",
+                    "presentacion": "Caja",
+                    "codigo_barras": "AUX-X",
                 },
                 format="json",
             ),
@@ -307,8 +313,12 @@ class CatalogoAPITests(TestCase):
             ),
         ]
 
-        self.assertTrue(all(respuesta.status_code == 200 for respuesta in lecturas))
-        self.assertTrue(all(respuesta.status_code == 403 for respuesta in escrituras))
+        self.assertTrue(
+            all(respuesta.status_code == 200 for respuesta in lecturas)
+        )
+        self.assertTrue(
+            all(respuesta.status_code == 403 for respuesta in escrituras)
+        )
         lote.refresh_from_db()
         alerta.refresh_from_db()
         self.assertEqual(lote.precio_venta, Decimal("2.00"))
@@ -330,8 +340,10 @@ class CatalogoAPITests(TestCase):
         crear = cliente_anonimo.post(
             "/medicamentos/",
             {
-                "nombre": "No autorizado", "principio_activo": "X",
-                "presentacion": "Caja", "codigo_barras": "ANON-X",
+                "nombre": "No autorizado",
+                "principio_activo": "X",
+                "presentacion": "Caja",
+                "codigo_barras": "ANON-X",
             },
             format="json",
         )
@@ -351,11 +363,11 @@ class CatalogoAPITests(TestCase):
             format="json",
         )
 
-        self.assertEqual(lectura.status_code, 403)
-        self.assertEqual(crear.status_code, 403)
-        self.assertEqual(desactivar_medicamento.status_code, 403)
-        self.assertEqual(desactivar_lote.status_code, 403)
-        self.assertEqual(desactivar_proveedor.status_code, 403)
+        self.assertEqual(lectura.status_code, 401)
+        self.assertEqual(crear.status_code, 401)
+        self.assertEqual(desactivar_medicamento.status_code, 401)
+        self.assertEqual(desactivar_lote.status_code, 401)
+        self.assertEqual(desactivar_proveedor.status_code, 401)
         self.assertEqual(Medicamento.objects.count(), 1)
 
     def test_auxiliar_puede_registrar_venta_por_endpoint_interno(self):
@@ -377,7 +389,10 @@ class CatalogoAPITests(TestCase):
             {
                 "referencia": "AUX-VENTA-PERMITIDA",
                 "detalles": [
-                    {"medicamento_id": self.medicamento.id, "cantidad": 1}
+                    {
+                        "medicamento_id": self.medicamento.id,
+                        "cantidad": 1,
+                    }
                 ],
             },
             format="json",
@@ -396,8 +411,8 @@ class CatalogoAPITests(TestCase):
             format="json",
         )
 
-        self.assertEqual(lectura.status_code, 403)
-        self.assertEqual(escritura.status_code, 403)
+        self.assertEqual(lectura.status_code, 401)
+        self.assertEqual(escritura.status_code, 401)
 
     @patch("inventory.services.auditoria_service.urlopen")
     def test_auditoria_resuelve_actor_validando_jwt_en_usuarios(
@@ -406,7 +421,8 @@ class CatalogoAPITests(TestCase):
     ):
         respuesta = MagicMock()
         respuesta.__enter__.return_value.read.return_value = (
-            b'{"id": 17, "username": "administradora", "rol": "administrador"}'
+            b'{"id": 17, "username": "administradora", '
+            b'"rol": "administrador"}'
         )
         abrir_url.return_value = respuesta
         request = APIRequestFactory().post(
@@ -423,8 +439,10 @@ class CatalogoAPITests(TestCase):
 
         self.assertEqual(evento.actor_id, 17)
         self.assertEqual(evento.actor_username, "administradora")
-        self.assertEqual(abrir_url.call_args.args[0].full_url,
-                         "http://mc-usuarios:8000/usuarios/me/")
+        self.assertEqual(
+            abrir_url.call_args.args[0].full_url,
+            "http://mc-usuarios:8000/usuarios/me/",
+        )
 
     @patch("inventory.services.auditoria_service.urlopen")
     def test_auditoria_falla_a_anónimo_si_usuarios_no_responde(
@@ -447,36 +465,71 @@ class CatalogoAPITests(TestCase):
         self.assertIsNone(evento.actor_id)
         self.assertEqual(evento.actor_username, "anónimo")
 
+    @patch("inventory.authentication.urlopen")
     @patch("inventory.services.auditoria_service.urlopen")
-    def test_api_auditoria_solo_administrador_puede_leer(self, abrir_url):
+    def test_api_auditoria_solo_administrador_puede_leer(
+        self,
+        abrir_url,
+        abrir_auth,
+    ):
         evento = RegistroAuditoria.objects.create(
             accion="desactivar",
             entidad="medicamento",
             entidad_id=self.medicamento.id,
             actor_username="admin-test",
         )
+
         respuesta = MagicMock()
+        respuesta.__enter__.return_value.status = 200
+
         abrir_url.return_value = respuesta
+        abrir_auth.return_value = respuesta
 
-        self.client.force_authenticate(user=None)
-        anonimo = self.client.get("/auditoria/")
-        self.assertEqual(anonimo.status_code, status.HTTP_403_FORBIDDEN)
+        # Usuario anónimo: acceso denegado (401).
+        cliente_anonimo = APIClient()
+        anonimo = cliente_anonimo.get("/auditoria/")
 
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer token-auxiliar")
-        respuesta.__enter__.return_value.read.return_value = (
-            b'{"id": 22, "username": "auxiliar", "rol": "auxiliar"}'
+        self.assertEqual(
+            anonimo.status_code,
+            status.HTTP_401_UNAUTHORIZED,
         )
-        auxiliar = self.client.get("/auditoria/")
-        self.assertEqual(auxiliar.status_code, status.HTTP_403_FORBIDDEN)
 
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer token-admin")
-        respuesta.__enter__.return_value.read.return_value = (
-            b'{"id": 17, "username": "administradora", "rol": "administrador"}'
+        # Auxiliar autenticado: no puede consultar auditoría (403).
+        cliente_auxiliar = APIClient()
+        cliente_auxiliar.credentials(
+            HTTP_AUTHORIZATION="Bearer token-auxiliar"
         )
-        administrador = self.client.get("/auditoria/")
-        borrar = self.client.delete(f"/auditoria/{evento.id}/")
 
-        self.assertEqual(administrador.status_code, status.HTTP_200_OK)
+        respuesta.__enter__.return_value.read.return_value = (
+            b'{"id": 22, "username": "auxiliar", '
+            b'"rol": "auxiliar", "activo": true}'
+        )
+
+        auxiliar = cliente_auxiliar.get("/auditoria/")
+
+        self.assertEqual(
+            auxiliar.status_code,
+            status.HTTP_403_FORBIDDEN,
+        )
+
+        # Administrador autenticado: puede consultar auditoría (200).
+        cliente_admin = APIClient()
+        cliente_admin.credentials(
+            HTTP_AUTHORIZATION="Bearer token-admin"
+        )
+
+        respuesta.__enter__.return_value.read.return_value = (
+            b'{"id": 17, "username": "administradora", '
+            b'"rol": "administrador", "activo": true}'
+        )
+
+        administrador = cliente_admin.get("/auditoria/")
+        borrar = cliente_admin.delete(f"/auditoria/{evento.id}/")
+
+        self.assertEqual(
+            administrador.status_code,
+            status.HTTP_200_OK,
+        )
         self.assertEqual(len(administrador.data), 1)
         self.assertEqual(
             borrar.status_code,
@@ -504,7 +557,10 @@ class CatalogoAPITests(TestCase):
         lote = Lote.objects.get(pk=lote_id)
 
         self.assertEqual(editar.status_code, status.HTTP_200_OK)
-        self.assertEqual(alterar_stock.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            alterar_stock.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
         self.assertEqual(lote.precio_venta, Decimal("9.25"))
         self.assertEqual(lote.cantidad_actual, 8)
         self.assertEqual(
@@ -523,7 +579,10 @@ class CatalogoAPITests(TestCase):
         )
 
         lote = Lote.objects.get(pk=lote_id)
-        self.assertEqual(respuesta.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            respuesta.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
         self.assertTrue(lote.activo)
         self.assertEqual(lote.cantidad_actual, 8)
 
