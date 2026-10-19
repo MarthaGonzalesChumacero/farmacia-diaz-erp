@@ -4,13 +4,14 @@ from django.utils import timezone
 
 from inventory.models import Lote
 from inventory.repositories.alerta_repository import AlertaRepository
+from inventory.services.auditoria_service import AuditoriaService
 
 
 class VencimientoService:
 
     @staticmethod
     def obtener_lotes_por_vencer(dias=30):
-        hoy = timezone.now().date()
+        hoy = timezone.localdate()
         fecha_limite = hoy + timedelta(days=dias)
 
         return Lote.objects.filter(
@@ -22,7 +23,7 @@ class VencimientoService:
 
     @staticmethod
     def generar_alertas_vencimiento(dias=30):
-        hoy = timezone.now().date()
+        hoy = timezone.localdate()
         lotes = VencimientoService.obtener_lotes_por_vencer(dias)
 
         alertas_creadas = 0
@@ -37,19 +38,43 @@ class VencimientoService:
                 f"{lote.fecha_vencimiento.strftime('%d/%m/%Y')}."
             )
 
-            alerta_existente = (
-                AlertaRepository.obtener_alerta_vencimiento(
+            alertas_pendientes = list(
+                AlertaRepository.obtener_alertas_vencimiento_pendientes_lote(
                     medicamento=lote.medicamento,
-                    mensaje=mensaje,
+                    numero_lote=lote.numero_lote,
                 )
             )
 
-            if not alerta_existente:
+            if not alertas_pendientes:
                 AlertaRepository.crear_alerta_vencimiento(
                     medicamento=lote.medicamento,
                     mensaje=mensaje,
                 )
                 alertas_creadas += 1
+            else:
+                alerta_principal = alertas_pendientes[0]
+                if alerta_principal.mensaje != mensaje:
+                    alerta_principal.mensaje = mensaje
+                    alerta_principal.save(update_fields=["mensaje"])
+
+                # Si existían alertas pendientes antiguas duplicadas previas para este mismo lote,
+                # marcarlas como revisadas conservando el historial de auditoría
+                for duplicada in alertas_pendientes[1:]:
+                    duplicada.leida = True
+                    duplicada.save(update_fields=["leida"])
+                    AuditoriaService.registrar(
+                        request=None,
+                        accion="marcar_revisada",
+                        entidad="alerta",
+                        entidad_id=duplicada.pk,
+                        referencia=f"Consolidación alerta duplicada lote {lote.numero_lote}",
+                        detalles={
+                            "leida_antes": False,
+                            "leida": True,
+                            "motivo": "consolidacion_duplicado",
+                            "alerta_principal_id": alerta_principal.pk,
+                        },
+                    )
 
         return {
             "lotes_revisados": lotes.count(),

@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 const inventarioApi = axios.create({
-  baseURL: 'http://127.0.0.1:8000',
+  baseURL: '/api-inventario',
+  timeout: 10_000,
   headers: {
     'Content-Type': 'application/json',
   },

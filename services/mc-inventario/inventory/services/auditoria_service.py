@@ -9,7 +9,10 @@ from inventory.models import RegistroAuditoria
 class AuditoriaService:
     @staticmethod
     def _obtener_actor(request):
-        autorizacion = request.headers.get("Authorization", "")
+        if not request:
+            return None, "sistema", None
+
+        autorizacion = getattr(request, "headers", {}).get("Authorization", "")
         if autorizacion.startswith("Bearer "):
             base_url = os.getenv(
                 "USUARIOS_API_URL",
@@ -54,7 +57,7 @@ class AuditoriaService:
         detalles=None,
     ):
         actor_id, actor_username, _ = AuditoriaService._obtener_actor(request)
-        meta = getattr(request, "META", {})
+        meta = getattr(request, "META", {}) if request else {}
 
         return RegistroAuditoria.objects.create(
             accion=accion,
@@ -65,5 +68,5 @@ class AuditoriaService:
             referencia=referencia,
             detalles=detalles or {},
             direccion_ip=meta.get("REMOTE_ADDR") or None,
-            user_agent=meta.get("HTTP_USER_AGENT", "")[:255],
+            user_agent=meta.get("HTTP_USER_AGENT", "")[:255] if meta else "",
         )

@@ -34,6 +34,7 @@ from .serializers import (
 from .services.auditoria_service import AuditoriaService
 from .services.movimiento_service import MovimientoService
 from .services.reporte_service import ReporteService
+from .services.stock_service import StockService
 from .services.vencimiento_service import VencimientoService
 
 
@@ -460,6 +461,10 @@ class AlertaViewSet(
         "leida",
         "medicamento",
     ]
+
+    def list(self, request, *args, **kwargs):
+        StockService.verificar_todos_los_medicamentos(request=request)
+        return super().list(request, *args, **kwargs)
 
     @action(
         detail=True,

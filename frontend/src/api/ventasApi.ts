@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 const ventasApi = axios.create({
-  baseURL: 'http://127.0.0.1:8001',
+  baseURL: '/api-ventas',
+  timeout: 10_000,
   headers: {
     'Content-Type': 'application/json',
   },

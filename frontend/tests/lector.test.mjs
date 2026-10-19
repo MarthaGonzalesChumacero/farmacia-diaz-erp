@@ -39,3 +39,17 @@ test('QR pequeño y borroso (3px por módulo, desenfoque fuerte) se lee con la a
   const f = fotogramaQR('FDE:LOTE:1', { px: 3, desenfoque: 2, contraste: 120 })
   assert.equal(leer(f), 'FDE:LOTE:1')
 })
+
+test('EAN-13 orientado verticalmente (90 grados) en el encuadre', () => {
+  const { codigo, bits } = bitsEAN13('777000000001')
+  const f = fotogramaEAN13(bits, { modulo: 3 })
+  // Rotar el fotograma 90 grados
+  const rotada = new Uint8ClampedArray(f.ancho * f.alto)
+  for (let y = 0; y < f.alto; y++) {
+    for (let x = 0; x < f.ancho; x++) {
+      rotada[x * f.alto + (f.alto - 1 - y)] = f.luminancia[y * f.ancho + x]
+    }
+  }
+  assert.equal(decodificarFotograma(rotada, f.alto, f.ancho), codigo)
+})
+
