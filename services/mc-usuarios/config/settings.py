@@ -186,7 +186,7 @@ STATIC_URL = 'static/'
 
 # CORS
 # Permite la comunicación entre React y Django.
-# Puertos utilizados durante el desarrollo.
+# Puertos utilizados durante el desarrollo y acceso del frontend desplegado.
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
@@ -197,6 +197,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5175',
     'http://localhost:5176',
     'http://127.0.0.1:5176',
+    'https://farmacia-diaz-frontend.enzonic.dev',
 ]
 
 
