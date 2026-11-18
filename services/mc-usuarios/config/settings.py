@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+import dj_database_url
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -106,31 +107,45 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Base de datos PostgreSQL
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv(
-            'POSTGRES_DB',
-            'farmacia_usuarios'
-        ),
-        'USER': os.getenv(
-            'POSTGRES_USER',
-            'usuarios_user'
-        ),
-        'PASSWORD': os.getenv(
-            'POSTGRES_PASSWORD',
-            'usuarios_password'
-        ),
-        'HOST': os.getenv(
-            'POSTGRES_HOST',
-            'postgres-usuarios'
-        ),
-        'PORT': os.getenv(
-            'POSTGRES_PORT',
-            '5432'
-        ),
+# Enzonic proporciona DATABASE_URL para el despliegue.
+# En local se mantienen las variables POSTGRES_* del entorno Docker.
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=60,
+            conn_health_checks=True,
+            ssl_require=True,
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv(
+                'POSTGRES_DB',
+                'farmacia_usuarios'
+            ),
+            'USER': os.getenv(
+                'POSTGRES_USER',
+                'usuarios_user'
+            ),
+            'PASSWORD': os.getenv(
+                'POSTGRES_PASSWORD',
+                'usuarios_password'
+            ),
+            'HOST': os.getenv(
+                'POSTGRES_HOST',
+                'postgres-usuarios'
+            ),
+            'PORT': os.getenv(
+                'POSTGRES_PORT',
+                '5432'
+            ),
+        }
+    }
 
 
 # Modelo de usuario personalizado
