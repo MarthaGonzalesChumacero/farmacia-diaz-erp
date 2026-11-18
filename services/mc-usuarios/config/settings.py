@@ -1,4 +1,3 @@
-
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -21,6 +20,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     'mc-usuarios',
+    'farmacia-diaz-usuarios.enzonic.dev',
 ]
 
 
