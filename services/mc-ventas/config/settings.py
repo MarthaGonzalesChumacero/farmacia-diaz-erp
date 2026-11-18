@@ -1,4 +1,3 @@
-
 """
 Django settings for config project.
 
@@ -32,7 +31,11 @@ SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 # En desarrollo DEBUG=True; en producción definir DEBUG=False en .env
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "farmacia-diaz-ventas.enzonic.dev",
+    "localhost",
+    "127.0.0.1",
+]
 
 
 # ======================================
